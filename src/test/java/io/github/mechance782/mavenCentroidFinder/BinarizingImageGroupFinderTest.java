@@ -2,9 +2,7 @@ package io.github.mechance782.mavenCentroidFinder;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
-import java.util.Arrays;
 import java.util.List;
-import java.util.*;
 import java.awt.image.BufferedImage;
 
 

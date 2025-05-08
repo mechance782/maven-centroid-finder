@@ -13,7 +13,7 @@ public class DfsBinaryGroupFinderTest {
         BinaryGroupFinder finder = new DfsBinaryGroupFinder();
         int[][] image = null;
 
-        Exception exception = assertThrows(NullPointerException.class, () -> {
+        assertThrows(NullPointerException.class, () -> {
             finder.findConnectedGroups(image);
         });
     }
@@ -26,7 +26,7 @@ public class DfsBinaryGroupFinderTest {
             {0, 0, 0}
         };
 
-        Exception exception = assertThrows(NullPointerException.class, () -> {
+        assertThrows(NullPointerException.class, () -> {
             finder.findConnectedGroups(image);
         });
     }
@@ -41,7 +41,7 @@ public class DfsBinaryGroupFinderTest {
             {2, 2, 3, 3, 2}
         };
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             finder.findConnectedGroups(image);
         });
     }
