@@ -5,7 +5,8 @@ Native dependency:
 - Apparently many video processing libraries are native.
 
 JavaCV: 
-- Native
+- https://javadoc.io/doc/org.bytedeco/javacv/latest/index.html (look at Frame Class and Java2DFrameConverter )
+- Native (in Maven, all native binaries are included, so it works cross-platform)
 - Two libraries combined into one (FFmpeg + OpenCV)
 - handles multiple video formats
 - easily creates BufferedImages
