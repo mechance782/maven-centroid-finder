@@ -16,7 +16,7 @@ public class VideoTest {
 
             Frame frame = grabber.grab();
             if(frame != null){
-                System.out.println("Grabbed a frame");
+                System.out.println("Grabbed a frame" + frame);
             } else{
                 System.out.println("Frame is null, failed to grab.");
             }
