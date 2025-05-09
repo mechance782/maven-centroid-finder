@@ -43,11 +43,11 @@
         <artifactId>exec-maven-plugin</artifactId>
         <version>3.1.0</version>
         <configuration>
-          <mainClass>io.github.mechance782.mavenCentroidFinder.ImageSummaryApp</mainClass>
+          <mainClass>io.github.mechance782.mavenCentroidFinder.VideoTest</mainClass>
           <arguments>
-            <argument>sampleInput/squares.jpg</argument>
-            <argument>FFA200</argument>
-            <argument>164</argument>
+            <argument>test.mp4</argument>
+            <!-- <argument>FFA200</argument>
+            <argument>164</argument> -->
           </arguments>
         </configuration>
       </plugin>
