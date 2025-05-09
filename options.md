@@ -21,6 +21,16 @@ Cons:
 -	This is definitely a more intermediate to an advanced option, the API is more complex and the syntax can be difficult for beginners to learn.
 -	This has more dependencies and brings in native libraries, increasing the build size and setup time
 
+Classes that may be of use to us:
+-- Video Reading --
+~ FFmpegFrameGrabber ~
+- This opens and reads frames from video files (compatible with MP4)
+- Methods such as
+
+-- Converting Frame to BufferedImage --
+~ Java2DFrameConverter ~
+- this converts frame objects into a buffered image
+
 
 JCodec
 - 100% Java
