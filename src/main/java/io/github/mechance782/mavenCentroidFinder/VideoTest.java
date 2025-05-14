@@ -46,7 +46,7 @@ public class VideoTest {
 
             grabber.stop();
         }catch(Exception e){
-            System.out.println("Error: " + e);;
+          System.out.println("Error: " + e);
         }
     }
     
