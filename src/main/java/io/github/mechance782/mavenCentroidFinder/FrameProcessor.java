@@ -25,6 +25,8 @@ public class FrameProcessor implements FrameCentroidFinder{
      * 
      * The first group in the sorted list will be the largest group, and will be returned.
      * 
+     * If no groups are found, a group of size 0, with coordinates -1, -1 should be returned.
+     * 
      * @param frame frame to search for centroid in
      */
     @Override
