@@ -117,4 +117,36 @@ public class FrameProcessorTest {
 
         assertEquals(expected, actual);
     }
+
+    public void largestCentroid_RealImageGroupFinder(){
+        // Create Frame from BufferedImage
+        BufferedImage image = new BufferedImage(3, 3, BufferedImage.TYPE_INT_RGB);
+        image.setRGB(0, 0, 0xb69a7a); // 1
+        image.setRGB(1, 0, 0xb69a98); // 1
+        image.setRGB(2, 0, 0xb69a9a); // 0
+        image.setRGB(0, 1, 0xb69a9f); // 0
+        image.setRGB(1, 1, 0xb69a7f); // 1
+        image.setRGB(2, 1, 0xbffa7b); // 0
+        image.setRGB(0, 2, 0xf6fa7b); // 0
+        image.setRGB(1, 2, 0xb69a76); // 1
+        image.setRGB(2, 2, 0x00ffff); // 0
+
+        Java2DFrameConverter converter = new Java2DFrameConverter();
+        Frame frame = converter.convert(image);
+        converter.close();
+
+        // Create all the objects needed to make a real FrameProcessor
+        ColorDistanceFinder distanceFinder = new EuclideanColorDistance();
+        int targetColor = 0xb69a7b;
+        int threshold = 30;
+        DistanceImageBinarizer binarizer = new DistanceImageBinarizer(distanceFinder, targetColor, threshold);
+        ImageGroupFinder finder = new BinarizingImageGroupFinder(binarizer, new DfsBinaryGroupFinder());
+        FrameProcessor processor = new FrameProcessor(finder);
+
+        // set expected and actual values
+        Group expected = new Group(4, new Coordinate(0, 0));
+        Group actual = processor.largestCentroid(frame);
+
+        assertEquals(expected, actual);
+    }
 }
