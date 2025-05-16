@@ -67,4 +67,19 @@ public class VideoProcessorTest {
             videoProcessor.writeCentroid(-4, group);
         });
     }
+
+    
+    // Tests what happens when a null group is passed to the method
+    @Test
+    void testWriteCentroid_nullGroup_throwsException(){
+        FakeFrameProcessor mockProcessor = new FakeFrameProcessor(null);
+        StringWriter writer = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(writer);
+        VideoProcessor videoProcessor = new VideoProcessor(mockProcessor, printWriter);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            videoProcessor.writeCentroid(3, null);
+        });
+    }
+
 }
