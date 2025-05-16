@@ -13,10 +13,10 @@ import java.io.PrintWriter;
 
 public class VideoProcessor implements VideoAnalyzer {
     
-    FrameProcessor processor;
+    FrameCentroidFinder processor;
     PrintWriter printer;
 
-    public VideoProcessor(FrameProcessor processor, PrintWriter printer){
+    public VideoProcessor(FrameCentroidFinder processor, PrintWriter printer){
         this.processor = processor;
         this.printer = printer;
     }
