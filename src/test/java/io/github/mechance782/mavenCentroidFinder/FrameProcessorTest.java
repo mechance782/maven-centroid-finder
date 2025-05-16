@@ -1,6 +1,7 @@
 package io.github.mechance782.mavenCentroidFinder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.awt.image.BufferedImage;
 import java.util.List;
@@ -35,21 +36,21 @@ public class FrameProcessorTest {
         image.setRGB(0, 1, 0xff0000);
         image.setRGB(0, 2, 0xff0000);
 
-        Java2DFrameConverter converter = new Java2DFrameConverter();
-        Frame frame = converter.convert(image);
-        converter.close();
+        try (Java2DFrameConverter converter = new Java2DFrameConverter();){
+            Frame frame = converter.convert(image);
 
-        // Define list of groups found in the frame
-        List<Group> groups = List.of(new Group(3, new Coordinate(0, 1)));
+            // Define list of groups found in the frame
+            List<Group> groups = List.of(new Group(3, new Coordinate(0, 1)));
 
-        // Define expected largestCentroid output
-        Group expected = new Group(3, new Coordinate(0, 1));
+            // Define expected largestCentroid output
+            Group expected = new Group(3, new Coordinate(0, 1));
 
-        // Create FrameProcessor with FakeImageGroupFinder and predefined list of groups
-        FrameProcessor processor = new FrameProcessor(new FakeImageGroupFinder(groups));
-        Group actual = processor.largestCentroid(frame);
+            // Create FrameProcessor with FakeImageGroupFinder and predefined list of groups
+            FrameProcessor processor = new FrameProcessor(new FakeImageGroupFinder(groups));
+            Group actual = processor.largestCentroid(frame);
 
-        assertEquals(expected, actual);
+            assertEquals(expected, actual);
+        }
     }
 
     @Test
@@ -80,42 +81,42 @@ public class FrameProcessorTest {
         image.setRGB(5, 7, red);
         image.setRGB(6, 7, red);
 
-        Java2DFrameConverter converter = new Java2DFrameConverter();
-        Frame frame = converter.convert(image);
-        converter.close();
+        try (Java2DFrameConverter converter = new Java2DFrameConverter();){
+            Frame frame = converter.convert(image);
 
-        List<Group> groups = List.of(new Group(6, new Coordinate(2, 5)),
-        new Group(5, new Coordinate(3, 2)), new Group(3, new Coordinate(5, 6)),
-        new Group(2, new Coordinate(2, 0)));
+            List<Group> groups = List.of(new Group(6, new Coordinate(2, 5)),
+            new Group(5, new Coordinate(3, 2)), new Group(3, new Coordinate(5, 6)),
+            new Group(2, new Coordinate(2, 0)));
 
-        Group expected = new Group(6, new Coordinate(2, 5));
+            Group expected = new Group(6, new Coordinate(2, 5));
 
-        // Create FrameProcessor with FakeImageGroupFinder and predefined list of groups
-        FrameProcessor processor = new FrameProcessor(new FakeImageGroupFinder(groups));
-        Group actual = processor.largestCentroid(frame);
+            // Create FrameProcessor with FakeImageGroupFinder and predefined list of groups
+            FrameProcessor processor = new FrameProcessor(new FakeImageGroupFinder(groups));
+            Group actual = processor.largestCentroid(frame);
 
-        assertEquals(expected, actual);
+            assertEquals(expected, actual);
+        }
     }
 
     public void largestCentroid_NoGroup(){
         BufferedImage image = new BufferedImage(3, 3, BufferedImage.TYPE_INT_RGB);
 
-        Java2DFrameConverter converter = new Java2DFrameConverter();
-        Frame frame = converter.convert(image);
-        converter.close();
+        try (Java2DFrameConverter converter = new Java2DFrameConverter();){
+            Frame frame = converter.convert(image);
 
-        // Define list of groups found in the frame
-        // Image Group Finder returns an empty list if no groups are found
-        List<Group> groups = List.of();
+            // Define list of groups found in the frame
+            // Image Group Finder returns an empty list if no groups are found
+            List<Group> groups = List.of();
 
-        // Define expected largestCentroid output
-        Group expected = new Group(0, new Coordinate(-1, -1));
+            // Define expected largestCentroid output
+            Group expected = new Group(0, new Coordinate(-1, -1));
 
-        // Create FrameProcessor with FakeImageGroupFinder and predefined list of groups
-        FrameProcessor processor = new FrameProcessor(new FakeImageGroupFinder(groups));
-        Group actual = processor.largestCentroid(frame);
+            // Create FrameProcessor with FakeImageGroupFinder and predefined list of groups
+            FrameProcessor processor = new FrameProcessor(new FakeImageGroupFinder(groups));
+            Group actual = processor.largestCentroid(frame);
 
-        assertEquals(expected, actual);
+            assertEquals(expected, actual);
+        }
     }
 
     public void largestCentroid_RealImageGroupFinder(){
@@ -131,22 +132,34 @@ public class FrameProcessorTest {
         image.setRGB(1, 2, 0xb69a76); // 1
         image.setRGB(2, 2, 0x00ffff); // 0
 
-        Java2DFrameConverter converter = new Java2DFrameConverter();
-        Frame frame = converter.convert(image);
-        converter.close();
+        try (Java2DFrameConverter converter = new Java2DFrameConverter();){
+            Frame frame = converter.convert(image);
 
-        // Create all the objects needed to make a real FrameProcessor
-        ColorDistanceFinder distanceFinder = new EuclideanColorDistance();
-        int targetColor = 0xb69a7b;
-        int threshold = 30;
-        DistanceImageBinarizer binarizer = new DistanceImageBinarizer(distanceFinder, targetColor, threshold);
-        ImageGroupFinder finder = new BinarizingImageGroupFinder(binarizer, new DfsBinaryGroupFinder());
-        FrameProcessor processor = new FrameProcessor(finder);
+            // Create all the objects needed to make a real FrameProcessor
+            ColorDistanceFinder distanceFinder = new EuclideanColorDistance();
+            int targetColor = 0xb69a7b;
+            int threshold = 30;
+            DistanceImageBinarizer binarizer = new DistanceImageBinarizer(distanceFinder, targetColor, threshold);
+            ImageGroupFinder finder = new BinarizingImageGroupFinder(binarizer, new DfsBinaryGroupFinder());
+            FrameProcessor processor = new FrameProcessor(finder);
 
-        // set expected and actual values
-        Group expected = new Group(4, new Coordinate(0, 0));
-        Group actual = processor.largestCentroid(frame);
+            // set expected and actual values
+            Group expected = new Group(4, new Coordinate(0, 0));
+            Group actual = processor.largestCentroid(frame);
 
-        assertEquals(expected, actual);
+            assertEquals(expected, actual);
+        }
+    }
+
+    public void largestCentroid_NullFrame(){
+        Frame frame = null;
+
+        List<Group> groups = List.of();
+        FrameProcessor processor = new FrameProcessor(new FakeImageGroupFinder(groups));
+        
+        assertThrows(IllegalArgumentException.class, () -> {
+            processor.largestCentroid(frame);
+        });
+
     }
 }
