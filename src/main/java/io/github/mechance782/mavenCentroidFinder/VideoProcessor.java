@@ -37,20 +37,24 @@ public class VideoProcessor implements VideoAnalyzer {
     @Override
     public void centroidToCsv(String fileName) {
 
-        try (FrameGrabber grabber = new FFmpegFrameGrabber(fileName)) {
+        try (FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(fileName)) {
             grabber.start();
             
             double doubleRate = grabber.getFrameRate();
             int rate = (int) doubleRate;
+            int frameCount = 0;
 
-            for(int i = 0; i < grabber.getLengthInFrames(); i++){
-                Frame frame = grabber.grabFrame();
+            Frame frame = null;
+            while ((frame = grabber.grabImage()) != null){
 
-                if (i % rate == 0){
+                // System.out.println(frame.);
+                if (frameCount % rate == 0){
                     Group frameCentroid = frameProcessor.largestCentroid(frame);
-                    int seconds = i / rate;
+                    int seconds = frameCount / rate;
                     writeCentroid(seconds, frameCentroid);
                 }
+
+                frameCount++;
 
             }
         } catch (Exception e) {
