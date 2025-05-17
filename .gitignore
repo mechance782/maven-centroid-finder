@@ -1,6 +1,9 @@
 # Generated csv files
 *.csv
 
+#Sample mp4 videos
+*.mp4 
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
