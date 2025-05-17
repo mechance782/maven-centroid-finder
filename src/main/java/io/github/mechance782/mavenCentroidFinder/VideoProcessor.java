@@ -17,11 +17,11 @@ import org.bytedeco.javacv.Frame;
 public class VideoProcessor implements VideoAnalyzer {
     
     FrameCentroidFinder frameProcessor;
-    String csvName;
+    PrintWriter writer;
 
-    public VideoProcessor(FrameCentroidFinder processor, String csvName){
+    public VideoProcessor(FrameCentroidFinder processor, PrintWriter writer){
         this.frameProcessor = processor;
-        this.csvName = csvName;
+        this.writer = writer;
     }
 
     /**
@@ -71,6 +71,13 @@ public class VideoProcessor implements VideoAnalyzer {
      */
     @Override
     public void writeCentroid(int seconds, Group group){
+        if (group == null || seconds < 0){
+            throw new IllegalArgumentException();
+        }
+
+        String csvRow = seconds + "," + group.centroid().x() + "," + group.centroid().y();
+
+        writer.println(csvRow);
         
     }    
 }
