@@ -1,6 +1,9 @@
 package io.github.mechance782.mavenCentroidFinder;
 import java.io.PrintWriter;
 
+import org.bytedeco.javacv.FFmpegFrameGrabber;
+import org.bytedeco.javacv.FrameGrabber;
+import org.bytedeco.javacv.Frame;
 
 /**
  * The VideoProcessor class implements the VideoAnalyzer interface
@@ -33,6 +36,21 @@ public class VideoProcessor implements VideoAnalyzer {
      */
     @Override
     public void centroidToCsv(String fileName) {
+
+        try (FrameGrabber grabber = new FFmpegFrameGrabber(fileName)) {
+            grabber.start();
+            
+            double doubleRate = grabber.getFrameRate();
+            int rate = (int) doubleRate;
+
+            for(int i = 0; i < grabber.getLengthInFrames(); i++){
+                // Frame frame = grabber.grabFrame();
+
+
+            }
+        } catch (Exception e) {
+            System.out.println("Frame Grabber Error: " + e);
+        }
     }
 
     /**
