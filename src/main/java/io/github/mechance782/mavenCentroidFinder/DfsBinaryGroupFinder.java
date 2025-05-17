@@ -3,6 +3,7 @@ package io.github.mechance782.mavenCentroidFinder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Stack;
 
 public class DfsBinaryGroupFinder implements BinaryGroupFinder {
    /**
@@ -78,10 +79,7 @@ public class DfsBinaryGroupFinder implements BinaryGroupFinder {
         return groups;
     }
 
-    private void dfs(int[][] image, int y, int x, int[] groupInfo){
-        // if y is out of bound or x is out of bounds return
-        // if image[y][x] = 0 return
-        if (y < 0 || y >= image.length || x < 0 || x >= image[y].length || image[y][x] == 0) return;
+    private void dfs(int[][] image, int startY, int startX, int[] groupInfo){
 
         // create 2d array of direction options
         int[][] directions = {
@@ -91,16 +89,30 @@ public class DfsBinaryGroupFinder implements BinaryGroupFinder {
             {0, 1}
         };
 
-        groupInfo[0] += 1;
-        groupInfo[1] += x;
-        groupInfo[2] += y;
+        Stack<int[]> stack = new Stack<>();
+        stack.push(new int[]{startX, startY});
 
-        // set current pixel to 0 
-        image[y][x] = 0;
+        while (!stack.isEmpty()){
+            int[] node = stack.pop();
 
-        // for each direction, perform recursion
-        for (int[] dir: directions){
-            dfs(image, y + dir[0], x + dir[1], groupInfo);
+            int x = node[0];
+            int y = node[1];
+            // if node is invalid or already visited, skip forward
+            if (y < 0 || y >= image.length || x < 0 || x >= image[y].length || image[y][x] == 0) continue;
+
+            // set node to visited
+            image[y][x] = 0;
+
+            // save node information
+            groupInfo[0] += 1;
+            groupInfo[1] += x;
+            groupInfo[2] += y;
+
+            // check nodes in every direction
+            for (int[] dir: directions){
+                stack.push(new int[]{x + dir[0], y + dir[1]});
+            }
+
         }
     }
     
