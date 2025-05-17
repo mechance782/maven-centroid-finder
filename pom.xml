@@ -43,14 +43,36 @@
         <artifactId>exec-maven-plugin</artifactId>
         <version>3.1.0</version>
         <configuration>
-          <mainClass>io.github.mechance782.mavenCentroidFinder.VideoTest</mainClass>
+          <mainClass>io.github.mechance782.mavenCentroidFinder.CentroidTrackerApp</mainClass>
           <arguments>
             <argument>test.mp4</argument>
             <!-- <argument>FFA200</argument>
             <argument>164</argument> -->
           </arguments>
-        </configuration>
-      </plugin>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>3.7.1</version>
+          <configuration>
+            <descriptorRefs>jar-with-dependencies</descriptorRefs>
+            <archive>
+              <manifest>
+                <mainClass>io.github.mechance782.mavenCentroidFinder.CentroidTrackerApp</mainClass>
+              </manifest>
+            </archive>
+          </configuration>
+          <executions>
+            <execution>
+              <id>make-assembly</id>
+              <phase>package</phase>
+              <goals>
+                <goal>single</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
     </plugins>
   </build>
 </project>
