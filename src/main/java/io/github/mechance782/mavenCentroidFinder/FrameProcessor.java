@@ -2,6 +2,8 @@ package io.github.mechance782.mavenCentroidFinder;
 
 import org.bytedeco.javacv.Java2DFrameConverter;
 import org.bytedeco.javacv.Frame;
+import java.awt.image.BufferedImage;
+import java.util.List;
 
 public class FrameProcessor implements FrameCentroidFinder{
     private final ImageGroupFinder groupFinder;
@@ -31,7 +33,18 @@ public class FrameProcessor implements FrameCentroidFinder{
      */
     @Override
     public Group largestCentroid(Frame frame) {
-        return null;
+        
+        BufferedImage image = frameConverter.convert(frame);
+
+        List<Group> foundGroups = groupFinder.findConnectedGroups(image);
+
+        if(foundGroups.isEmpty()){
+            return new Group(0, new Coordinate(-1, -1));
+        }
+
+        Group largestGroup = foundGroups.get(0);
+
+        return largestGroup;
     }
     
 }
