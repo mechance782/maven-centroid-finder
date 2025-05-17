@@ -16,12 +16,12 @@ import org.bytedeco.javacv.Frame;
 
 public class VideoProcessor implements VideoAnalyzer {
     
-    FrameCentroidFinder processor;
-    PrintWriter printer;
+    FrameCentroidFinder frameProcessor;
+    String csvName;
 
-    public VideoProcessor(FrameCentroidFinder processor, PrintWriter printer){
-        this.processor = processor;
-        this.printer = printer;
+    public VideoProcessor(FrameCentroidFinder processor, String csvName){
+        this.frameProcessor = processor;
+        this.csvName = csvName;
     }
 
     /**
@@ -44,8 +44,13 @@ public class VideoProcessor implements VideoAnalyzer {
             int rate = (int) doubleRate;
 
             for(int i = 0; i < grabber.getLengthInFrames(); i++){
-                // Frame frame = grabber.grabFrame();
+                Frame frame = grabber.grabFrame();
 
+                if (i % rate == 0){
+                    Group frameCentroid = frameProcessor.largestCentroid(frame);
+                    int seconds = i / rate;
+                    writeCentroid(seconds, frameCentroid);
+                }
 
             }
         } catch (Exception e) {
@@ -66,6 +71,6 @@ public class VideoProcessor implements VideoAnalyzer {
      */
     @Override
     public void writeCentroid(int seconds, Group group){
-
+        
     }    
 }
