@@ -34,17 +34,19 @@ public class FrameProcessor implements FrameCentroidFinder{
     @Override
     public Group largestCentroid(Frame frame) {
         
+        // Conver the frame to a BufferedImage for processing
         BufferedImage image = frameConverter.convert(frame);
 
+        // Find all of the connected groups in the image
         List<Group> foundGroups = groupFinder.findConnectedGroups(image);
 
+        // If no groups are found, return the default "empty" group
         if(foundGroups.isEmpty()){
             return new Group(0, new Coordinate(-1, -1));
         }
 
-        Group largestGroup = foundGroups.get(0);
-
-        return largestGroup;
+        // Return the first group found in the sorted list 
+        return foundGroups.get(0);
     }
     
 }
