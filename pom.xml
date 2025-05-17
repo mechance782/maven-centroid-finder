@@ -45,7 +45,7 @@
         <configuration>
           <mainClass>io.github.mechance782.mavenCentroidFinder.CentroidTrackerApp</mainClass>
           <arguments>
-            <argument>test.mp4</argument>
+            <!-- <argument>test.mp4</argument> -->
             <!-- <argument>FFA200</argument>
             <argument>164</argument> -->
           </arguments>
