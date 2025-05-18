@@ -30,6 +30,7 @@
   </dependencies>
 
   <build>
+    <finalName>centroid-finder</finalName>
     <plugins>
       <!-- Surefire -->
       <plugin>
