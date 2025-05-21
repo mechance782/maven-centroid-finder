@@ -1,3 +1,6 @@
+# node.js and express files
+node_modules/
+
 # Generated csv files
 *.csv
 
