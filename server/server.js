@@ -4,7 +4,7 @@ import router from './routes/processorRouter.js'
 import dotenv from 'dotenv';
 
 dotenv.config({
-    path: import.meta.dirname + '../.env'
+    path: import.meta.dirname + '/../.env'
 });
 
 
