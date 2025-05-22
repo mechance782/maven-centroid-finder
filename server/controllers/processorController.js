@@ -1,12 +1,22 @@
 // get all videos
 export const allVideos = async(req, res) => {
-    
+    // call model folder to get all the videos in the folder
+
+    // 200: return all videos as a json payload ??? <-- not too sure about it being a json payload
+    // 500: Error reading video directory
 }
 
 // get thumbnail
 export const thumbnail = async(req, res) => {
-    // get filename from query params
+    // get filename from path params
 
+    // call model to get the video path
+        // if exists send back path for thumbnail extraction
+        //  error if filename isnt found in model
+    
+    // get thumbnail <--- somehow??
+    // 200: OK, return the thumbnail
+    // 500: Error generating thumbnail
 
 }
 // get job status
@@ -15,11 +25,19 @@ export const jobStatus = async(req, res) => {
 
     // call model folder to get the  processing status
         // if finished, send an HTTP 200 OK response containing a JSON payload with jobId, status and csv file path
-        // if not, send a 202: accepted response with jobId and status
+        // 202: accepted response with jobId and status
 
 }
 
 // post processing job
 export const processingJob = async(req, res) => {
+    // get path param --> filename
+    // get query params --> targetColor, threshold
 
+    // make asynchronous call to analyze video
+        // returns a jobID we can poll
+    
+    // 202 - Accepted: return the job id
+    // 400 - Bad Request:  "Missing targetColor or threshold query parameter."
+    // 500 - Internal Server Error: "Error starting job"
 }
