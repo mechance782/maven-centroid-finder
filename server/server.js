@@ -1,6 +1,11 @@
 import express from 'express';
 import cors from 'cors';
-import router from './routes/processorRouter'
+import router from './routes/processorRouter.js'
+import dotenv from 'dotenv';
+
+dotenv.config({
+    path: import.meta.dirname + '../.env'
+});
 
 
 const app = express();
