@@ -19,10 +19,14 @@ export const allVideos = async(req, res) => {
 // get thumbnail
 export const thumbnail = async(req, res) => {
     // get filename from path params
-
+    const filename = req.params.filename;
     // call model to get the video path
-        // if exists send back path for thumbnail extraction
-        //  error if filename isnt found in model
+    const filepath = dataLayer.getVideoPath(filename);
+    //  error if filename isnt found in model
+    if(!filepath) res.status(500).json({
+        "error": `Error finding ${filename} in video folder.`
+    });
+    // if exists send back path for thumbnail extraction
     
     // get thumbnail <--- somehow??
     // 200: OK, return the thumbnail

@@ -27,7 +27,7 @@ const getJobStatus = (jobId) => {
 
 
 // getAllVideos
-const getAllVideos =  () => {
+const getAllVideos = () => {
     // use .env file path to find video folder
     const videoFolderPath = path.join(import.meta.dirname + '/..' + process.env.VIDEO_PATH);
     // take all file names in folder and add to an array
@@ -51,4 +51,17 @@ const getThumbnail = (filename) => {
     // return filepath to jpeg thumbnail
 }
 
-export default {getAllVideos, getJobStatus, getThumbnail, startNewProcessingJob}
+const getVideoPath = (filename) => {
+    // call get all videos to get a list of videos
+    const videoList = getAllVideos();
+    // check if filename is included in the array (and that a videolist exists)
+    if(videoList && videoList.includes(filename)){
+        // return a string concatenation of the filepath if found
+        return './public/videos/' + filename;
+    } else{
+        console.log(`${filename} does not exist in videos folder.`);
+        return null;
+    }
+}
+
+export default {getAllVideos, getJobStatus, getThumbnail, startNewProcessingJob, getVideoPath}
