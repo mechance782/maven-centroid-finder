@@ -1,3 +1,5 @@
+import path from 'path';
+import fs from 'fs';
 // Create or import Map to track child processes here
 
 // CREATE
@@ -27,8 +29,11 @@ const getJobStatus = (jobId) => {
 // getAllVideos
 const getAllVideos = () => {
     // use .env file path to find video folder
+    const videoFolderPath = path.join(import.meta.dirname + '/..' + process.env.VIDEO_PATH);
     // take all file names in folder and add to an array
+    const videoList = fs.readdirSync(videoFolderPath);
     // return array
+    return videoList;
 }
 
 
@@ -40,3 +45,4 @@ const getThumbnail = (filename) => {
     // return filepath to jpeg thumbnail
 }
 
+export default {getAllVideos, getJobStatus, getThumbnail, startNewProcessingJob}
