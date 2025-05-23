@@ -1,11 +1,12 @@
 import path from 'path';
 import fs from 'fs';
-const ffmpeg = require('fluent-ffmpeg');
+import Ffmpeg from 'fluent-ffmpeg';
 import { timeStamp } from 'console';
 // Create or import Map to track child processes here
 
 // CREATE
 
+export const add = (a, b) => a + b;
 
 const startNewProcessingJob = (args) => {
     // spawn child process using args
@@ -51,7 +52,7 @@ const generateThumbnail = async (filepath, filename) => {
     const outputPath = process.env.THUMBNAIL_PATH;
 
     try{
-        ffmpeg(filepath).screenshots({
+        Ffmpeg(filepath).screenshots({
         timestamps: [1],
         filename: `${filename}-thumbnail.jpg`,
         folder: outputPath

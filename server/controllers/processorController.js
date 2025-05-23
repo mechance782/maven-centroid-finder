@@ -1,6 +1,4 @@
 import dataLayer from '../model/processorDataLayer.js';
-const ffmpeg = require('fluent-ffmpeg');
-const fs = require('fs');
 
 // get all videos
 export const allVideos = async(req, res) => {
@@ -31,10 +29,13 @@ export const thumbnail = async(req, res) => {
         "error": `Error finding ${filename} in video folder.`
     });
     // if exists send back path for thumbnail extraction
+    const thumbnail = dataLayer.getThumbnail(filename);
     
-    // get thumbnail <--- somehow??
-    // 200: OK, return the thumbnail
-    // 500: Error generating thumbnail
+    if(thumbnail){
+        return thumbnail;
+    } else{
+        throw new Error(500);
+    }
 
 }
 // get job status
