@@ -1,3 +1,6 @@
+# scratch files
+scratch.*
+
 # node.js and express files
 node_modules/
 
