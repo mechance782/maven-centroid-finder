@@ -25,19 +25,14 @@ const startNewProcessingJob = (filename, targetColor, threshold) => {
 
     job.unref();
     // if spawn event fires, create jobId and store process in map
-    var spawned = false;
+    const jobId = uuidv4();
     job.on("spawn", () => {
-        spawned = true;
+        processingJobs.set(jobId, job);
+        console.log(processingJobs.get(jobId));
+        
     });
 
-    if (spawned){
-        const jobId = uuidv4();
-        processingJobs.set(jobId, job);
-        return jobId;
-    } else {
-        return null;
-    }
-
+    return jobId;
     // if not then handle 505 error
     // return jobId
 }
