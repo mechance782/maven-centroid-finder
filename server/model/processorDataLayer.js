@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import Ffmpeg from 'fluent-ffmpeg';
+import ffmpeg from 'fluent-ffmpeg';
 import { timeStamp } from 'console';
 import { spawn } from 'node:child_process';
 import { v4 as uuidv4 } from 'uuid';
@@ -129,4 +129,4 @@ const getVideoPath = (filename) => {
     }
 }
 
-export default {getAllVideos, getJobStatus, getThumbnail, startNewProcessingJob, getVideoPath}
+export default {getAllVideos, getJobStatus, getThumbnail, startNewProcessingJob, getVideoPath, add}
