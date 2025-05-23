@@ -2,15 +2,42 @@ import path from 'path';
 import fs from 'fs';
 import Ffmpeg from 'fluent-ffmpeg';
 import { timeStamp } from 'console';
+import { spawn } from 'node:child_process';
+import { v4 as uuidv4 } from 'uuid';
+
 // Create or import Map to track child processes here
+const processingJobs = new Map();
 
 // CREATE
 
 export const add = (a, b) => a + b;
 
-const startNewProcessingJob = (args) => {
+// expected args: filename, targetcolor, threshold
+const startNewProcessingJob = (filename, targetColor, threshold) => {
+    const jarPath = path.join(import.meta.dirname + '/../..' + process.env.JAR_PATH);
+    const videoPath = path.join(import.meta.dirname + '/..' + process.env.VIDEO_PATH + '/' + filename);
+    const outputcsv = filename + ".csv";
     // spawn child process using args
+    const job = spawn('java', ['-jar', jarPath, videoPath, outputcsv, targetColor, threshold], {
+        detached: true,
+        stdio: 'ignore',
+    })
+
+    job.unref();
     // if spawn event fires, create jobId and store process in map
+    var spawned = false;
+    job.on("spawn", () => {
+        spawned = true;
+    });
+
+    if (spawned){
+        const jobId = uuidv4();
+        processingJobs.set(jobId, job);
+        return jobId;
+    } else {
+        return null;
+    }
+
     // if not then handle 505 error
     // return jobId
 }
