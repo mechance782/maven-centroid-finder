@@ -1,5 +1,7 @@
 import path from 'path';
 import fs from 'fs';
+const ffmpeg = require('fluent-ffmpeg');
+import { timeStamp } from 'console';
 // Create or import Map to track child processes here
 
 // CREATE
@@ -44,11 +46,46 @@ const getAllVideos = () => {
 
 
 // getThumbnail (filename)
+const generateThumbnail = async (filepath, filename) => {
+    // grab the output file path for thumbnails
+    const outputPath = process.env.THUMBNAIL_PATH;
+
+    try{
+        ffmpeg(filepath).screenshots({
+        timestamps: [1],
+        filename: `${filename}-thumbnail.jpg`,
+        folder: outputPath
+        });
+    } catch(e){
+        e.message=("Error generating thumbnail: ", e);
+        e.status =(500);
+        throw e;
+    }
+}
+
 const getThumbnail = (filename) => {
-    // make ffmpeg with .env file path + filename 
-    // use .screenshots on ffmpeg object
-    // name screenshot and place in public folder
-    // return filepath to jpeg thumbnail
+    const thumbnailFolderPath = path.join(import.meta.dirname + '/..' + process.env.THUMBNAIL_PATH);
+    let thumbnailList;
+    try{
+        thumbnailList = fs.readdirSync(thumbnailFolderPath);
+    } catch (e){
+        e.message=("Error reading thumbnails: ", e);
+        e.status =(500);
+        throw e;
+    }
+
+    for(thumbnail in thumbnailList){
+        let filenameArray = thumbnail.split('-thumbnail.jpg');
+        let file = filenameArray[0];
+
+        if(file == filename){
+            return thumbnail;
+        }
+        else{
+            generateThumbnail(filename);
+            return process.env.THUMBNAIL_PATH + filename + '-thumbnail.jpg';
+        }
+    }   
 }
 
 const getVideoPath = (filename) => {
@@ -57,7 +94,7 @@ const getVideoPath = (filename) => {
     // check if filename is included in the array (and that a videolist exists)
     if(videoList && videoList.includes(filename)){
         // return a string concatenation of the filepath if found
-        return './public/videos/' + filename;
+        return process.env + filename;
     } else{
         console.log(`${filename} does not exist in videos folder.`);
         return null;

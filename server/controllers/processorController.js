@@ -1,4 +1,6 @@
 import dataLayer from '../model/processorDataLayer.js';
+const ffmpeg = require('fluent-ffmpeg');
+const fs = require('fs');
 
 // get all videos
 export const allVideos = async(req, res) => {
@@ -17,6 +19,8 @@ export const allVideos = async(req, res) => {
 }
 
 // get thumbnail
+// referenced this article on how to use ffmpeg
+// https://mohammedshamseerpv.medium.com/generate-thumbnails-from-videos-in-node-js-using-fluent-ffmpeg-62583d1c2e61
 export const thumbnail = async(req, res) => {
     // get filename from path params
     const filename = req.params.filename;
