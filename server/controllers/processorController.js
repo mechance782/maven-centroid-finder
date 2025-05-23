@@ -1,9 +1,19 @@
+import dataLayer from '../model/processorDataLayer.js';
+
 // get all videos
 export const allVideos = async(req, res) => {
     // call model folder to get all the videos in the folder
-
+    const list = dataLayer.getAllVideos();
     // 200: return all videos as a json payload ??? <-- not too sure about it being a json payload
-    // 500: Error reading video directory
+    if (list){
+        res.status(200).json(list);
+    } else {
+        // 500: Error reading video directory
+        res.status(500).json({
+            "error": "Error reading video directory"
+        })
+    }
+
 }
 
 // get thumbnail

@@ -27,13 +27,19 @@ const getJobStatus = (jobId) => {
 
 
 // getAllVideos
-const getAllVideos = () => {
+const getAllVideos =  () => {
     // use .env file path to find video folder
     const videoFolderPath = path.join(import.meta.dirname + '/..' + process.env.VIDEO_PATH);
     // take all file names in folder and add to an array
-    const videoList = fs.readdirSync(videoFolderPath);
-    // return array
-    return videoList;
+
+    try {
+        const videoList = fs.readdirSync(videoFolderPath);
+        
+        return videoList;
+    } catch (error) {
+        console.log("Error reading files in video folder: " + error);
+        return null;
+    }
 }
 
 
