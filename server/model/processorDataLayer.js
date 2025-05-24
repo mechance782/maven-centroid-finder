@@ -18,23 +18,29 @@ const startNewProcessingJob = (filename, targetColor, threshold) => {
     const videoPath = path.join(import.meta.dirname + '/..' + process.env.VIDEO_PATH + '/' + filename);
     const outputcsv = filename + ".csv";
     // spawn child process using args
-    const job = spawn('java', ['-jar', jarPath, videoPath, outputcsv, targetColor, threshold], {
-        detached: true,
-        stdio: 'ignore',
-    })
+    try {
+        const job = spawn('java', ['-jar', jarPath, videoPath, outputcsv, targetColor, threshold], {
+            detached: true,
+            stdio: 'ignore',
+        })
 
-    job.unref();
-    // if spawn event fires, create jobId and store process in map
-    const jobId = uuidv4();
-    job.on("spawn", () => {
-        processingJobs.set(jobId, job);
-        console.log(processingJobs.get(jobId));
-        
-    });
+        job.unref();
 
-    return jobId;
-    // if not then handle 505 error
-    // return jobId
+        // if spawn event fires, store process in map
+        const jobId = uuidv4();
+        job.on("spawn", () => {
+            processingJobs.set(jobId, job);
+            // console.log(processingJobs.get(jobId));
+            
+        });
+
+        // check if child process exists
+        if (job.pid) return jobId;
+        return null;
+    } catch (err) {
+        return null;
+    }
+    
 }
 
 
