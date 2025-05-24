@@ -13,6 +13,7 @@ const processingJobs = new Map();
 export const add = (a, b) => a + b;
 
 // expected args: filename, targetcolor, threshold
+// outputCsv is generated in server folder
 const startNewProcessingJob = (filename, targetColor, threshold) => {
     const jarPath = path.join(import.meta.dirname + '/../..' + process.env.JAR_PATH);
     const videoPath = path.join(import.meta.dirname + '/..' + process.env.VIDEO_PATH + '/' + filename);
@@ -38,6 +39,7 @@ const startNewProcessingJob = (filename, targetColor, threshold) => {
         if (job.pid) return jobId;
         return null;
     } catch (err) {
+        console.log("Error starting child process: " + err);
         return null;
     }
     

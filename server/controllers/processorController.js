@@ -51,12 +51,31 @@ export const jobStatus = async(req, res) => {
 // post processing job
 export const processingJob = async(req, res) => {
     // get path param --> filename
+    const filename = req.params.filename;
     // get query params --> targetColor, threshold
-
+    if (!(req.query.targetColor && req.query.threshold)){
+        // 400 - Bad Request:  "Missing targetColor or threshold query parameter."
+        res.status(400).json({
+            "error": "Mssing targetColor or threshold query parameter."
+        })
+    }
+    const targetColor = req.query.targetColor;
+    const threshold = req.query.threshold;
     // make asynchronous call to analyze video
         // returns a jobID we can poll
+    const jobId = dataLayer.startNewProcessingJob(filename, targetColor, threshold);
+
+    if (jobId){
+       // 202 - Accepted: return the job id 
+       res.status(202).json({
+        "jobsId": jobId
+       })
+    } else {
+        res.status(500).json({
+            "error": "Error starting job"
+        })
+    }
     
-    // 202 - Accepted: return the job id
-    // 400 - Bad Request:  "Missing targetColor or threshold query parameter."
+    
     // 500 - Internal Server Error: "Error starting job"
 }
