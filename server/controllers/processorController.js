@@ -22,20 +22,18 @@ export const allVideos = async(req, res) => {
 export const thumbnail = async(req, res) => {
     // get filename from path params
     const filename = req.params.filename;
-    // call model to get the video path
-    const filepath = dataLayer.getVideoPath(filename);
-    //  error if filename isnt found in model
-    if(!filepath) res.status(500).json({
-        "error": `Error finding ${filename} in video folder.`
-    });
-    // if exists send back path for thumbnail extraction
-    const thumbnail = dataLayer.getThumbnail(filename);
-    
-    if(thumbnail){
-        return thumbnail;
-    } else{
-        throw new Error(500);
+    try{
+        const videoPath = dataLayer.getVideoPath(filename);
+        if(!videoPath) return res.status(404).json({error: 'Video not found.'});
+
+        const thumbnailPath = await getThumbnail(videoPath, filename);
+        res.status(200).json(thumbnailPath);
+    } catch (e){
+        e.message = "Error grabbing thumbnail from provided video."
+        e.status = 400;
+        throw e;
     }
+    
 
 }
 // get job status

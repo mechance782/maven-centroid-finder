@@ -94,7 +94,7 @@ const generateThumbnail = async (filepath, filename) => {
     }
 }
 
-const getThumbnail = (filename) => {
+const getThumbnail = async(videoPath, filename) => {
     const thumbnailFolderPath = path.join(import.meta.dirname + '/..' + process.env.THUMBNAIL_PATH);
     let thumbnailList;
     try{
@@ -112,11 +112,8 @@ const getThumbnail = (filename) => {
         if(file == filename){
             return thumbnail;
         }
-        else{
-            generateThumbnail(filename);
-            return process.env.THUMBNAIL_PATH + filename + '-thumbnail.jpg';
-        }
-    }   
+    }
+    return await generateThumbnail(videoPath, filename);
 }
 
 const getVideoPath = (filename) => {
@@ -125,7 +122,7 @@ const getVideoPath = (filename) => {
     // check if filename is included in the array (and that a videolist exists)
     if(videoList && videoList.includes(filename)){
         // return a string concatenation of the filepath if found
-        return process.env + filename;
+        return process.env.VIDEO + filename;
     } else{
         console.log(`${filename} does not exist in videos folder.`);
         return null;
