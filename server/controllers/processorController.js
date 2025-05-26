@@ -23,14 +23,15 @@ export const thumbnail = async(req, res) => {
     // get filename from path params
     const filename = req.params.filename;
     try{
-        const videoPath = dataLayer.getVideoPath(filename);
+        const videoPath =  await dataLayer.getVideoPath(filename);
         if(!videoPath) return res.status(404).json({error: 'Video not found.'});
-        console.log(`Getting thumbnail of ${videoPath}`);
-        const thumbnailPath = await generateThumbnail(videoPath, filename);
-        res.status(200).json(thumbnailPath);
+
+        console.log(`Getting thumbnail of ${videoPath} and ${filename}`);
+        const thumbnailPath = await dataLayer.generateThumbnail(videoPath, filename);
+
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        res.status(200).sendFile(thumbnailPath, err => err && nextTick(err));
     } catch (e){
-        e.message = "Error grabbing thumbnail from provided video."
-        e.status = 400;
         throw e;
     }
     
