@@ -1,10 +1,16 @@
 import path from 'path';
+import { promises as FS } from 'fs'; 
 import fs from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
+import ffmpegInstall from '@ffmpeg-installer/ffmpeg';
 import { timeStamp } from 'console';
 import { spawn } from 'node:child_process';
 import { v4 as uuidv4 } from 'uuid';
 
+
+ffmpeg.setFfmpegPath(ffmpegInstall.path);
+
+const THUMB_DIR = path.resolve(process.env.THUMBNAIL_PATH || 'public/thumbnails');
 // Create or import Map to track child processes here
 const processingJobs = new Map();
 
@@ -84,7 +90,9 @@ const getAllVideos = () => {
 
 // getThumbnail (filename)
  const generateThumbnail = async (videopath, filename) => {
-    const outputPath = path.join(process.env.THUMBNAIL_PATH, `${filename}-thumbnail.png`);
+    await FS.mkdir(THUMB_DIR, {recursive: true});
+    
+    const outputPath = path.join(THUMB_DIR, `${filename}-thumbnail.png`);
     
     return new Promise((resolve, reject) => {
         ffmpeg(videopath)
@@ -145,7 +153,7 @@ const getVideoPath = (filename) => {
     // check if filename is included in the array (and that a videolist exists)
     if(videoList && videoList.includes(filename)){
         // return a string concatenation of the filepath if found
-        return process.env.VIDEO_PATH + filename;
+        return path.join('.',process.env.VIDEO_PATH + filename);
     } else{
         console.log(`${filename} does not exist in videos folder.`);
         return null;

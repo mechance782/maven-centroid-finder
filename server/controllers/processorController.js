@@ -34,8 +34,6 @@ export const thumbnail = async(req, res) => {
     } catch (e){
         throw e;
     }
-    
-
 }
 // get job status
 export const jobStatus = async(req, res) => {
