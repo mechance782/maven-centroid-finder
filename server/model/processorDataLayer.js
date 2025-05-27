@@ -4,6 +4,7 @@ import ffmpeg from 'fluent-ffmpeg';
 import { timeStamp } from 'console';
 import { spawn } from 'node:child_process';
 import { v4 as uuidv4 } from 'uuid';
+import { error } from 'node:console';
 
 // Create or import Map to track child processes here
 const processingJobs = new Map();
@@ -30,10 +31,11 @@ const startNewProcessingJob = (filename, targetColor, threshold) => {
         // if spawn event fires, store process in map
         const jobId = uuidv4();
         job.on("spawn", () => {
-            processingJobs.set(jobId, job);
+            
             // console.log(processingJobs.get(jobId));
             
         });
+        processingJobs.set(jobId, {job: job, csv: outputcsv});
 
         // check if child process exists
         if (job.pid) return jobId;
@@ -52,9 +54,47 @@ const startNewProcessingJob = (filename, targetColor, threshold) => {
 // getJobStatus (jobId)
 const getJobStatus = (jobId) => {
     // get child process from map using job id
+    if (!processingJobs.has(jobId)){
+        return {
+            "error": "Job ID not found"
+        }
+    } 
+    const {job, csv} = processingJobs.get(jobId);
     // check for errors
     // check if process is running
+    if (!job.exitCode && job.connected) {
+        return {
+            "status": "processing"
+        }
+    } else if (job.exitCode !== 0){
+        console.log(job.exitCode)
+        return {
+            "status": "error",
+            "error": "Error processing video: Unexpected ffmpeg error"
+        }
+    }
+
     // if process closes, move created csv file into public/results
+    const csvFilePath = path.join(import.meta.dirname + '/../' + csv);
+    const csvFolder = path.join(import.meta.dirname + '/..' + process.env.RESULTS_PATH)
+
+    try {
+        if (!fs.existsSync(csvFolder)){
+            fs.mkdirSync(csvFolder, {recursive: true});
+        }
+
+        fs.renameSync(csvFilePath, csvFolder + '/' + csv);
+
+        return {
+            "status": "done",
+            "result": "/results/" + csv
+        }
+    } catch (err){
+        console.error("Error moving csv file:" + err);
+        return {
+            "error": "Error fetching job status"
+        }
+    }
     // return current status and any resulting errors or results
 }
 
