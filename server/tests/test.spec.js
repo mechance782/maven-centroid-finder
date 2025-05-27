@@ -49,3 +49,76 @@ describe('Controller Testing', ()=>{
   });
 });
 
+
+/** --------------------- MODEL TESTING --------------------- */
+describe('Model Testing', ()=> {
+    /** -------- START NEW PROCESSING JOB -------- */
+  describe('startNewProcessingJob', ()=>{
+    it('Return job id if child process exists', ()=>{
+
+    });
+    it('Should return null if child process doesnt exist', ()=>{
+
+    });
+    it('Should return null if error occurs', ()=>{
+
+    });
+  });
+  /** -------- GET JOB STATUS -------- */
+  describe('getJobStatus', ()=>{
+    it('Should return error if no process w/ job ID exists', ()=>{
+
+    });
+    it('Should return status of processing if job is still active', ()=>{
+
+    });
+    it('Should return error if exit code doesnt equal 0', ()=>{
+
+    });
+    it('Should return state of done if found in results folder', ()=>{
+
+    });
+    it('Should throw error if job status cant be found', ()=>{
+
+    });
+  });
+  /** -------- GET ALL VIDEOS -------- */
+  describe('getAllVideos', ()=>{
+    it('Should return a list of all videos', ()=>{
+
+    });
+    it('Should return null if no videos found', ()=>{
+
+    });
+  });
+  /** --------  GENERATE NEW THUMBNAIL -------- */
+  describe('generateThumbnail', ()=>{
+    it('Should generate new thumbnail in thumbnail folder if successful', async()=>{
+
+    });
+    it('Should throw error if an error occurs', async()=>{
+
+    });
+  });
+  /** --------  GET THUMBNAIL -------- */
+  describe('getThumbnail', ()=>{
+    it('Should return thumbnail path if thumbnail already exists', async()=>{
+
+    });
+    it('Should generate a thumbnail if no thumbnail is found', async()=>{
+
+    });
+    it('Should throw error if an error occurs', async()=>{
+
+    });
+  });
+  /** --------  GET VIDEO PATH -------- */
+  describe('getVideoPath', ()=>{
+    it('Should return video path', ()=>{
+
+    });
+    it('Should return null if no video path found', ()=>{
+
+    });
+  });
+});
