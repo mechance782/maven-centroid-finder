@@ -38,11 +38,19 @@ export const thumbnail = async(req, res) => {
 // get job status
 export const jobStatus = async(req, res) => {
     // get the job id from the path parameters
-
+    const jobId = req.params.jobId;
     // call model folder to get the  processing status
+    const result = await dataLayer.getJobStatus(jobId);
         // if finished, send an HTTP 200 OK response containing a JSON payload with jobId, status and csv file path
+    if (result.status){
+        res.status(200).json(result);
+    }
         // 202: accepted response with jobId and status
-
+    if (result.error == "Job ID not found"){
+        res.status(404).json(result);
+    } else {
+        res.status(500).json(result);
+    }
 }
 
 // post processing job
@@ -53,7 +61,7 @@ export const processingJob = async(req, res) => {
     if (!(req.query.targetColor && req.query.threshold)){
         // 400 - Bad Request:  "Missing targetColor or threshold query parameter."
         res.status(400).json({
-            "error": "Mssing targetColor or threshold query parameter."
+            "error": "Missing targetColor or threshold query parameter."
         })
     }
     const targetColor = req.query.targetColor;
@@ -65,7 +73,7 @@ export const processingJob = async(req, res) => {
     if (jobId){
        // 202 - Accepted: return the job id 
        res.status(202).json({
-        "jobsId": jobId
+        "jobId": jobId
        })
     } else {
         res.status(500).json({
