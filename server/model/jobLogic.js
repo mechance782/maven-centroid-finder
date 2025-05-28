@@ -1,9 +1,15 @@
 // expected args: filename, targetcolor, threshold
 // outputCsv is generated in server folder
-const baseStartNewProcessingJob = (filename, targetColor, threshold) => {
+const baseStartNewProcessingJob = (filename, targetColor, threshold, {
+    fs,
+    path,
+    uuidv4,
+    spawn,
+    processingJobs
+}) => {
     // create paths and filenames
-    const jarPath = path.join(import.meta.dirname, '../..', process.env.JAR_PATH);
-    const videoPath = path.join(import.meta.dirname, '..', process.env.VIDEO_PATH, filename);
+    const jarPath = path.join(process.cwd(), '..', process.env.JAR_PATH);
+    const videoPath = path.join(process.cwd(), process.env.VIDEO_PATH, filename);
     const outputcsv = filename + ".csv";
     // create log file
     const logFilePath = path.join('/tmp', `${filename}-${Date.now()}.log`);

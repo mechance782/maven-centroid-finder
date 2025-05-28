@@ -23,37 +23,13 @@ export const add = (a, b) => a + b;
 // expected args: filename, targetcolor, threshold
 // outputCsv is generated in server folder
 const startNewProcessingJob = (filename, targetColor, threshold) => {
-    // create paths and filenames
-    const jarPath = path.join(process.cwd(), '..', process.env.JAR_PATH);
-    const videoPath = path.join(process.cwd(), process.env.VIDEO_PATH, filename);
-    const outputcsv = filename + ".csv";
-    // create log file
-    const logFilePath = path.join('/tmp', `${filename}-${Date.now()}.log`);
-    const logFile = fs.openSync(logFilePath, 'a');
-   
-    try {
-        // spawn child process using args
-        // process is seperated from main app, 
-        // and output is redirected to log file
-        const job = spawn('java', ['-jar', jarPath, videoPath, outputcsv, targetColor, threshold], {
-            detached: true,
-            stdio: ['ignore', logFile, logFile],
-        })
-
-        job.unref();
-
-        //store process information in map with uuid and correlating csv filename
-        const jobId = uuidv4();
-        processingJobs.set(jobId, {csvFile: outputcsv, logFilePath});
-
-        // check if child process exists then return id
-        if (job.pid) return jobId;
-        return null;
-    } catch (err) {
-        console.log("Error starting child process: ", err);
-        return null;
-    }
-    
+    return baseStartNewProcessingJob(filename, targetColor, threshold, {
+        fs,
+        path,
+        uuidv4,
+        spawn,
+        processingJobs
+    })
 }
 
 
