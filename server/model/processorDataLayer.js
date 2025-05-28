@@ -6,7 +6,8 @@ import ffmpegInstall from '@ffmpeg-installer/ffmpeg';
 import { timeStamp } from 'console';
 import { spawn } from 'node:child_process';
 import { v4 as uuidv4 } from 'uuid';
-import { error } from 'node:console';
+import base from './jobLogic.js'
+const {baseGetJobStatus, baseStartNewProcessingJob, waitForLogContent, handleCsvFile} = base;
 
 
 ffmpeg.setFfmpegPath(ffmpegInstall.path);
@@ -23,8 +24,8 @@ export const add = (a, b) => a + b;
 // outputCsv is generated in server folder
 const startNewProcessingJob = (filename, targetColor, threshold) => {
     // create paths and filenames
-    const jarPath = path.join(import.meta.dirname, '../..', process.env.JAR_PATH);
-    const videoPath = path.join(import.meta.dirname, '..', process.env.VIDEO_PATH, filename);
+    const jarPath = path.join(process.cwd(), '..', process.env.JAR_PATH);
+    const videoPath = path.join(process.cwd(), process.env.VIDEO_PATH, filename);
     const outputcsv = filename + ".csv";
     // create log file
     const logFilePath = path.join('/tmp', `${filename}-${Date.now()}.log`);
@@ -57,101 +58,15 @@ const startNewProcessingJob = (filename, targetColor, threshold) => {
 
 
 const getJobStatus = async (jobId) => {
-    // if jobId isn't stored in the map, return error
-    if (!processingJobs.has(jobId)){
-        return {
-            "error": "Job ID not found"
-        }
-    } 
-    // get processing job information using jobId
-    const {csvFile, logFilePath} = processingJobs.get(jobId);
-    
-    // check for errors in logfile
-    if (fs.existsSync(logFilePath)){
-        try {
-            const outputLogs = await waitForLogContent(logFilePath);
-            // check for errors and exceptions in log
-            if (outputLogs.toLowerCase().includes('error') || outputLogs.toLowerCase().includes('exception')){
-                // clean up log file which is now unnecessary 
-                try {
-                    await FS.unlink(logFilePath);
-                } catch (err){
-                    console.log("Error: failed to delete log file ", err)
-                }
-                return {
-                    "status": "error",
-                    "error": "Error processing video: Unexpected ffmpeg error"
-                }
-            }
-        } catch (err){
-            console.log(err);
-        }   
-    }
-
-    // clean up log files
-    try {
-        await FS.unlink(logFilePath);
-    } catch (err) {
-        console.log("Error: failed to delete log file ", err)
-    }
-
-    // path to expected csv file and path to it's new destination folder
-    const csvFilePath = path.join(process.cwd(), csvFile);
-    const csvFolder = path.join(process.cwd(), process.env.RESULTS_PATH)
-
-    // if csv file is generated, move it, then return status + results
-    if (fs.existsSync(csvFilePath)){
-        return handleCsvFile(csvFolder, csvFilePath, csvFile);
-    }
-
-    // if no errors and no csv file, then status is processing
-    return {
-        "status": "processing"
-    }
+    return await baseGetJobStatus(jobId, {
+        processingJobs,
+        fs,
+        FS,
+        path,
+        waitForLogContent,
+        handleCsvFile
+    })
 }
-
-// Helper method for getJobStatus
-// handles fs logic for moving generated csv to correct directory
-// returns object with status and csv file path or with error message
-const handleCsvFile = (csvFolder, csvFilePath, csvFile) => {
-    try {
-        // if the csv results directory does not exist yet, then make it
-        if (!fs.existsSync(csvFolder)){
-            fs.mkdirSync(csvFolder, {recursive: true});
-        }
-
-        // get csv file and move it to results directory
-        fs.renameSync(csvFilePath, csvFolder + '/' + csvFile);
-
-        return {
-            "status": "done",
-            "result": "/results/" + csvFile
-        }
-    } catch (err){
-        console.error("Error moving csv file:", err);
-        return {
-            "error": "Error fetching job status"
-        }
-    }
-}
-
-// helper method for getJobStatus
-// ensures the log file is read AFTER jar output is flushed and the log file has content
-const waitForLogContent = async (filePath, maxRetries = 5, delay = 500) => {
-
-    // try to read the log file every 500 ms
-    // after 5 tries, throw error
-    for (let i = 0; i < maxRetries; i++) {
-        try {
-            const content = await FS.readFile(filePath, 'utf8');
-            if (content.trim().length > 0) return content;
-        } catch (err) {
-            // File may not be created yet, so ignore the error for now
-        }
-        await new Promise(res => setTimeout(res, delay));
-    }
-    throw new Error("Log file is still empty after retries");
-};
 
 
 // getAllVideos
