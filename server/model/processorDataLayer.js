@@ -29,7 +29,6 @@ const startNewProcessingJob = (filename, targetColor, threshold) => {
     // create log file
     const logFilePath = path.join('/tmp', `${filename}-${Date.now()}.log`);
     const logFile = fs.openSync(logFilePath, 'a');
-    console.log(logFilePath);
    
     try {
         // spawn child process using args
@@ -56,7 +55,88 @@ const startNewProcessingJob = (filename, targetColor, threshold) => {
     
 }
 
-// function that ensures the log file is read AFTER jar output is flushed and the log file has content
+
+const getJobStatus = async (jobId) => {
+    // if jobId isn't stored in the map, return error
+    if (!processingJobs.has(jobId)){
+        return {
+            "error": "Job ID not found"
+        }
+    } 
+    // get processing job information using jobId
+    const {csvFile, logFilePath} = processingJobs.get(jobId);
+    
+    // check for errors in logfile
+    if (fs.existsSync(logFilePath)){
+        try {
+            const outputLogs = await waitForLogContent(logFilePath);
+            // check for errors and exceptions in log
+            if (outputLogs.toLowerCase().includes('error') || outputLogs.toLowerCase().includes('exception')){
+                // clean up log file which is now unnecessary 
+                try {
+                    await FS.unlink(logFilePath);
+                } catch (err){
+                    console.log("Error: failed to delete log file ", err)
+                }
+                return {
+                    "status": "error",
+                    "error": "Error processing video: Unexpected ffmpeg error"
+                }
+            }
+        } catch (err){
+            console.log(err);
+        }   
+    }
+
+    // clean up log files
+    try {
+        await FS.unlink(logFilePath);
+    } catch (err) {
+        console.log("Error: failed to delete log file ", err)
+    }
+
+    // path to expected csv file and path to it's new destination folder
+    const csvFilePath = path.join(process.cwd(), csvFile);
+    const csvFolder = path.join(process.cwd(), process.env.RESULTS_PATH)
+
+    // if csv file is generated, move it, then return status + results
+    if (fs.existsSync(csvFilePath)){
+        return handleCsvFile(csvFolder, csvFilePath, csvFile);
+    }
+
+    // if no errors and no csv file, then status is processing
+    return {
+        "status": "processing"
+    }
+}
+
+// Helper method for getJobStatus
+// handles fs logic for moving generated csv to correct directory
+// returns object with status and csv file path or with error message
+const handleCsvFile = (csvFolder, csvFilePath, csvFile) => {
+    try {
+        // if the csv results directory does not exist yet, then make it
+        if (!fs.existsSync(csvFolder)){
+            fs.mkdirSync(csvFolder, {recursive: true});
+        }
+
+        // get csv file and move it to results directory
+        fs.renameSync(csvFilePath, csvFolder + '/' + csvFile);
+
+        return {
+            "status": "done",
+            "result": "/results/" + csvFile
+        }
+    } catch (err){
+        console.error("Error moving csv file:", err);
+        return {
+            "error": "Error fetching job status"
+        }
+    }
+}
+
+// helper method for getJobStatus
+// ensures the log file is read AFTER jar output is flushed and the log file has content
 const waitForLogContent = async (filePath, maxRetries = 5, delay = 500) => {
 
     // try to read the log file every 500 ms
@@ -72,79 +152,6 @@ const waitForLogContent = async (filePath, maxRetries = 5, delay = 500) => {
     }
     throw new Error("Log file is still empty after retries");
 };
-
-
-const getJobStatus = async (jobId) => {
-    // if jobId isn't stored in the map, return error
-    if (!processingJobs.has(jobId)){
-        return {
-            "error": "Job ID not found"
-        }
-    } 
-
-    // get processing job information using jobId
-    const {csvFile, logFilePath} = processingJobs.get(jobId);
-
-    // check for errors in logfile
-    if (fs.existsSync(logFilePath)){
-        try {
-            const outputLogs = await waitForLogContent(logFilePath);
-            // check for errors and exceptions in log
-            if (outputLogs.toLowerCase().includes('error') || outputLogs.toLowerCase().includes('exception')){
-                // clean up log file which is now unnecessary 
-                try {
-                    await FS.unlink(logFilePath);
-                } catch (err){
-                    console.log("Error: failed to deleted log file ", err)
-                }
-                return {
-                    "status": "error",
-                    "error": "Error processing video: Unexpected ffmpeg error"
-                }
-            }
-        } catch (err){
-            console.log(err);
-        }
-        
-    }
-
-    // path to expected csv file and path to it's new destination folder
-    const csvFilePath = path.join(import.meta.dirname, '..', csvFile);
-    const csvFolder = path.join(import.meta.dirname, '..', process.env.RESULTS_PATH)
-
-    // if csv file is not yet generated, then the job is still processing
-    if (!fs.existsSync(csvFilePath)){
-        return {
-            "status": "processing"
-        }
-    }
-
-    // clean up log file 
-    try {
-        await FS.unlink(logFilePath);
-    } catch (err) {
-        console.log("Error: failed to deleted log file ", err)
-    }
-
-    // if the csv file does exist, then the child process is done
-    try {
-        if (!fs.existsSync(csvFolder)){
-            fs.mkdirSync(csvFolder, {recursive: true});
-        }
-
-        fs.renameSync(csvFilePath, csvFolder + '/' + csvFile);
-
-        return {
-            "status": "done",
-            "result": "/results/" + csvFile
-        }
-    } catch (err){
-        console.error("Error moving csv file:", err);
-        return {
-            "error": "Error fetching job status"
-        }
-    }
-}
 
 
 // getAllVideos
