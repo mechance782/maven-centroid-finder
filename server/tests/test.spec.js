@@ -116,6 +116,7 @@ describe('Model Testing', ()=> {
 
       fakeFs.existsSync.withArgs('log.txt').returns(true);
       fakeFs.existsSync.withArgs('job.csv').returns(false);
+      
 
       const result = await baseGetJobStatus('id-123', {
         processingJobs,
@@ -129,14 +130,75 @@ describe('Model Testing', ()=> {
       expect(result.status).to.equal('processing');
 
     });
-    it('Should return error if exit code doesnt equal 0', async ()=>{
+    it('Should return status of error if output logs contain an error', async ()=>{
+      processingJobs.set('id-123', {
+        csvFile: 'job.csv',
+        logFilePath: 'log.txt'
+      });
 
+      fakeFs.existsSync.withArgs('log.txt').returns(true);
+      fakeFs.existsSync.withArgs('job.csv').returns(false);
+
+      const result = await baseGetJobStatus('id-123', {
+        processingJobs,
+        fs: fakeFs,
+        FS: fakeFsPromises,
+        path: fakePath,
+        waitForLogContent: async () => 'error',
+        handleCsvFile: () => {}
+      })
+
+      expect(result.status).to.equal('error');
+      expect(result.error).to.equal('Error processing video: Unexpected ffmpeg error')
     });
-    it('Should return state of done if found in results folder', async ()=>{
+    it('Should return state of done if csv is found in results folder', async ()=>{
+      processingJobs.set('id-123', {
+        csvFile: 'job.csv',
+        logFilePath: 'log.txt'
+      });
 
+      fakeFs.existsSync.withArgs('log.txt').returns(true);
+      fakeFs.existsSync.withArgs('job.csv').returns(true);
+      fakeFs.existsSync.withArgs('csvFilePath').returns(true);
+
+      const result = await baseGetJobStatus('id-123', {
+        processingJobs,
+        fs: fakeFs,
+        FS: fakeFsPromises,
+        path: {join: () => 'csvFilePath'},
+        waitForLogContent: async () => '',
+        handleCsvFile: () => { return {
+            "status": "done",
+            "result": "/results/jobs.csv"
+        }}
+      })
+
+      expect(result.status).to.equal('done');
+      expect(result.result).to.equal('/results/jobs.csv');
     });
     it('Should throw error if job status cant be found', async ()=>{
 
+      processingJobs.set('id-123', {
+        csvFile: 'job.csv',
+        logFilePath: 'log.txt'
+      });
+
+      fakeFs.existsSync.withArgs('log.txt').returns(true);
+      fakeFs.existsSync.withArgs('job.csv').returns(true);
+      fakeFs.existsSync.withArgs('csvFilePath').returns(true);
+
+      const result = await baseGetJobStatus('id-123', {
+        processingJobs,
+        fs: fakeFs,
+        FS: fakeFsPromises,
+        path: {join: () => 'csvFilePath'},
+        waitForLogContent: async () => '',
+        handleCsvFile: () => { return {
+            "error": "Error fetching job status"
+        }}
+      })
+
+      expect(result.error).to.equal("Error fetching job status")
     });
   });
   /** -------- GET ALL VIDEOS -------- */
