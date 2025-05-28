@@ -23,11 +23,11 @@ export const add = (a, b) => a + b;
 // outputCsv is generated in server folder
 const startNewProcessingJob = (filename, targetColor, threshold) => {
     // create paths and filenames
-    const jarPath = path.join(import.meta.dirname + '/../..' + process.env.JAR_PATH);
-    const videoPath = path.join(import.meta.dirname + '/..' + process.env.VIDEO_PATH + '/' + filename);
+    const jarPath = path.join(import.meta.dirname, '../..', process.env.JAR_PATH);
+    const videoPath = path.join(import.meta.dirname, '..', process.env.VIDEO_PATH, filename);
     const outputcsv = filename + ".csv";
     // create log file
-    const logFilePath = path.join('/tmp/' + `${filename}-${Date.now()}.log`);
+    const logFilePath = path.join('/tmp', `${filename}-${Date.now()}.log`);
     const logFile = fs.openSync(logFilePath, 'a');
     console.log(logFilePath);
    
@@ -50,18 +50,31 @@ const startNewProcessingJob = (filename, targetColor, threshold) => {
         if (job.pid) return jobId;
         return null;
     } catch (err) {
-        console.log("Error starting child process: " + err);
+        console.log("Error starting child process: ", err);
         return null;
     }
     
 }
 
+// function that ensures the log file is read AFTER jar output is flushed and the log file has content
+const waitForLogContent = async (filePath, maxRetries = 5, delay = 500) => {
+
+    // try to read the log file every 500 ms
+    // after 5 tries, throw error
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            const content = await FS.readFile(filePath, 'utf8');
+            if (content.trim().length > 0) return content;
+        } catch (err) {
+            // File may not be created yet, so ignore the error for now
+        }
+        await new Promise(res => setTimeout(res, delay));
+    }
+    throw new Error("Log file is still empty after retries");
+};
 
 
-// READ
-
-// getJobStatus (jobId)
-const getJobStatus = (jobId) => {
+const getJobStatus = async (jobId) => {
     // if jobId isn't stored in the map, return error
     if (!processingJobs.has(jobId)){
         return {
@@ -75,10 +88,15 @@ const getJobStatus = (jobId) => {
     // check for errors in logfile
     if (fs.existsSync(logFilePath)){
         try {
-            const outputLogs = fs.readFileSync(logFilePath, { encoding: 'utf8'})
-            console.log("output: " + outputLogs);
-            // if output is not as expected, an error is assumed
-            if (!outputLogs.includes('Input #0')){
+            const outputLogs = await waitForLogContent(logFilePath);
+            // check for errors and exceptions in log
+            if (outputLogs.toLowerCase().includes('error') || outputLogs.toLowerCase().includes('exception')){
+                // clean up log file which is now unnecessary 
+                try {
+                    await FS.unlink(logFilePath);
+                } catch (err){
+                    console.log("Error: failed to deleted log file ", err)
+                }
                 return {
                     "status": "error",
                     "error": "Error processing video: Unexpected ffmpeg error"
@@ -91,14 +109,21 @@ const getJobStatus = (jobId) => {
     }
 
     // path to expected csv file and path to it's new destination folder
-    const csvFilePath = path.join(import.meta.dirname + '/../' + csvFile);
-    const csvFolder = path.join(import.meta.dirname + '/..' + process.env.RESULTS_PATH)
+    const csvFilePath = path.join(import.meta.dirname, '..', csvFile);
+    const csvFolder = path.join(import.meta.dirname, '..', process.env.RESULTS_PATH)
 
     // if csv file is not yet generated, then the job is still processing
     if (!fs.existsSync(csvFilePath)){
         return {
             "status": "processing"
         }
+    }
+
+    // clean up log file 
+    try {
+        await FS.unlink(logFilePath);
+    } catch (err) {
+        console.log("Error: failed to deleted log file ", err)
     }
 
     // if the csv file does exist, then the child process is done
@@ -114,7 +139,7 @@ const getJobStatus = (jobId) => {
             "result": "/results/" + csvFile
         }
     } catch (err){
-        console.error("Error moving csv file:" + err);
+        console.error("Error moving csv file:", err);
         return {
             "error": "Error fetching job status"
         }
@@ -125,7 +150,7 @@ const getJobStatus = (jobId) => {
 // getAllVideos
 const getAllVideos = () => {
     // use .env file path to find video folder
-    const videoFolderPath = path.join(import.meta.dirname + '/..' + process.env.VIDEO_PATH);
+    const videoFolderPath = path.join(import.meta.dirname, '..', process.env.VIDEO_PATH);
     // take all file names in folder and add to an array
 
     try {
@@ -133,7 +158,7 @@ const getAllVideos = () => {
         
         return videoList;
     } catch (error) {
-        console.log("Error reading files in video folder: " + error);
+        console.log("Error reading files in video folder: ", error);
         return null;
     }
 }
