@@ -1,7 +1,9 @@
 import mock from 'mock-fs';
+import sinon from 'sinon';
 import { expect } from 'chai';
 import dataLayer from '../model/processorDataLayer.js';
 import { allVideos, thumbnail, jobStatus, processingJob } from '../controllers/processorController.js';
+import { baseGetJobStatus, handleCsvFile } from '../model/jobLogic.js';
 const { getAllVideos, getJobStatus, startNewProcessingJob, add } = dataLayer;
 
 describe('add()', () => {
@@ -72,19 +74,67 @@ describe('Model Testing', ()=> {
   });
   /** -------- GET JOB STATUS -------- */
   describe('getJobStatus', ()=>{
-    it('Should return error if no process w/ job ID exists', ()=>{
+    const processingJobs = new Map();
+    const fakeFs = {
+      existsSync:sinon.stub(),
+      mkdirSync: sinon.stub(),
+      renameSync: sinon.stub()
+    }
+
+    const fakeFsPromises = {
+      unlink: sinon.stub().resolves()
+    }
+
+    const fakePath = {
+      join: (...args) => args.join('/')
+    }
+
+    afterEach(() => {
+      sinon.restore();
+      processingJobs.clear();
+    })
+
+    it('Should return error if no process w/ job ID exists', async ()=>{
+      const result = await baseGetJobStatus('bad-id', {
+        processingJobs,
+        fs: fakeFs,
+        FS: fakeFsPromises,
+        path: fakePath,
+        waitForLogContent: async () => '',
+        handleCsvFile
+      })
+
+      expect(result).to.deep.equal({error: 'Job ID not found'})
 
     });
-    it('Should return status of processing if job is still active', ()=>{
+    it('Should return status of processing if job is still active', async ()=>{
+      processingJobs.set('id-123', {
+        csvFile: 'job.csv',
+        logFilePath: 'log.txt'
+      });
+
+      fakeFs.existsSync.withArgs('log.txt').returns(true);
+      fakeFs.existsSync.withArgs('job.csv').returns(false);
+
+      const result = await baseGetJobStatus('id-123', {
+        processingJobs,
+        fs: fakeFs,
+        FS: fakeFsPromises,
+        path: fakePath,
+        waitForLogContent: async () => '',
+        handleCsvFile: () => {}
+      })
+
+      expect(result.status).to.equal('processing');
 
     });
-    it('Should return error if exit code doesnt equal 0', ()=>{
+    it('Should return error if exit code doesnt equal 0', async ()=>{
 
     });
-    it('Should return state of done if found in results folder', ()=>{
+    it('Should return state of done if found in results folder', async ()=>{
 
     });
-    it('Should throw error if job status cant be found', ()=>{
+    it('Should throw error if job status cant be found', async ()=>{
 
     });
   });
