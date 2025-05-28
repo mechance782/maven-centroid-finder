@@ -4,6 +4,7 @@ import { expect } from 'chai';
 import dataLayer from '../model/processorDataLayer.js';
 import { allVideos, thumbnail, jobStatus, processingJob } from '../controllers/processorController.js';
 import { baseGetJobStatus, handleCsvFile } from '../model/jobLogic.js';
+import { mkdir } from 'node:fs';
 const { getAllVideos, getJobStatus, startNewProcessingJob, add } = dataLayer;
 
 describe('add()', () => {
@@ -180,6 +181,43 @@ describe('Model Testing', ()=> {
   });
   /** --------  GENERATE NEW THUMBNAIL -------- */
   describe('generateThumbnail', ()=>{
+    const filename = 'demo';
+    const videoPath = '/videos/demo.mp4';
+    const expectedOut = path.join('thumbnails', `${filename}-thumbnail.png`);
+    let mkdirStub;
+    let screenshotsStub;
+    let onStub;
+    let ffmpegStub;
+
+    beforeEach(async ()=>{
+      process.env.THUMBNAIL_PATH = 'thumbnails';
+      mkdirStub = sinon.stub(fs, 'mkdir').resolves();
+
+      screenshotsStub = sinon.stub().returnsThis();
+
+      // build a fake "processor" object that supports .screenshots() and .on()
+      onStub = sinon.stub().callsFake(function (event, cb) {
+      // Keep chainability: return the processor
+      // Actual callback triggers will be handled inside individual tests
+      if (event === 'end' || event === 'error') {
+        // store latest handler so the test can invoke it later
+        this[`_${event}Handler`] = cb;
+      }
+      return this;
+    });
+
+      const fakeProcessor = {screenshots: screenshotsStub, on: onStub};
+
+      ffmpegStub = sinon.stub(ffmpegModule, 'default').callsFake(() => fakeProcessor);
+    
+      ({ generateThumbnail } = await import('../model/processorDataLayer.js'));
+    });
+
+    afterEach(() => {
+      sinon.restore();
+      delete process.env.THUMBNAIL_PATH;
+    });
+
     it('Should generate new thumbnail in thumbnail folder if successful', async()=>{
 
     });
@@ -187,17 +225,6 @@ describe('Model Testing', ()=> {
 
     });
   });
-  /** --------  GET THUMBNAIL -------- */
-  describe('getThumbnail', ()=>{
-    it('Should return thumbnail path if thumbnail already exists', async()=>{
-
-    });
-    it('Should generate a thumbnail if no thumbnail is found', async()=>{
-
-    });
-    it('Should throw error if an error occurs', async()=>{
-
-    });
   });
   /** --------  GET VIDEO PATH -------- */
   describe('getVideoPath', ()=>{
@@ -207,5 +234,4 @@ describe('Model Testing', ()=> {
     it('Should return null if no video path found', ()=>{
 
     });
-  });
 });
