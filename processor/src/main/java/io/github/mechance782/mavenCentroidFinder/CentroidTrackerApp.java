@@ -13,7 +13,7 @@ public class CentroidTrackerApp {
     public static void main(String[] args) {
         // check for correct number of arguments
         if (args.length != 4){
-            System.out.println("Usage: java -jar videoprocessor.jar <inputPath> <outputCsv> <targetColor> <threshold>");
+            System.err.println("Error: invalid usage, expected: java -jar videoprocessor.jar <inputPath> <outputCsv> <targetColor> <threshold>");
             return;
         }
 
@@ -26,7 +26,7 @@ public class CentroidTrackerApp {
         try {
             threshold = Integer.parseInt(args[3]);
         } catch (Exception e) {
-            System.err.println("Threshold must be an integer.");
+            System.err.println("Error: threshold must be an integer.");
             return;
         }
 
@@ -35,14 +35,14 @@ public class CentroidTrackerApp {
         try {
             targetColor = Integer.parseInt(hexTargetColor, 16);
         } catch (Exception e) {
-            System.err.println("Invalid hex target color. Please provide a color in RRGGBB format.");
+            System.err.println("Error: Invalid hex target color. Please provide a color in RRGGBB format.");
             return;
         }
 
         // check if File exists at given path string
         File videoFile = new File(inputVideoPath);
         if (!videoFile.exists()){
-            System.err.println("Invalid input path to mp4 video. File not Found");
+            System.err.println("Error: Invalid input path to mp4 video. File not Found");
             return;
         }
 
