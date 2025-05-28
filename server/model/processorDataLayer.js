@@ -22,28 +22,31 @@ export const add = (a, b) => a + b;
 // expected args: filename, targetcolor, threshold
 // outputCsv is generated in server folder
 const startNewProcessingJob = (filename, targetColor, threshold) => {
+    // create paths and filenames
     const jarPath = path.join(import.meta.dirname + '/../..' + process.env.JAR_PATH);
     const videoPath = path.join(import.meta.dirname + '/..' + process.env.VIDEO_PATH + '/' + filename);
     const outputcsv = filename + ".csv";
-    // spawn child process using args
+    // create log file
+    const logFilePath = path.join('/tmp/' + `${filename}-${Date.now()}.log`);
+    const logFile = fs.openSync(logFilePath, 'a');
+    console.log(logFilePath);
+   
     try {
+        // spawn child process using args
+        // process is seperated from main app, 
+        // and output is redirected to log file
         const job = spawn('java', ['-jar', jarPath, videoPath, outputcsv, targetColor, threshold], {
             detached: true,
-            stdio: 'ignore',
+            stdio: ['ignore', logFile, logFile],
         })
 
         job.unref();
 
-        // if spawn event fires, store process in map
+        //store process information in map with uuid and correlating csv filename
         const jobId = uuidv4();
-        job.on("spawn", () => {
-            
-            // console.log(processingJobs.get(jobId));
-            
-        });
-        processingJobs.set(jobId, {job: job, csv: outputcsv});
+        processingJobs.set(jobId, {csvFile: outputcsv, logFilePath});
 
-        // check if child process exists
+        // check if child process exists then return id
         if (job.pid) return jobId;
         return null;
     } catch (err) {
@@ -59,41 +62,56 @@ const startNewProcessingJob = (filename, targetColor, threshold) => {
 
 // getJobStatus (jobId)
 const getJobStatus = (jobId) => {
-    // get child process from map using job id
+    // if jobId isn't stored in the map, return error
     if (!processingJobs.has(jobId)){
         return {
             "error": "Job ID not found"
         }
     } 
-    const {job, csv} = processingJobs.get(jobId);
-    // check for errors
-    // check if process is running
-    if (!job.exitCode && job.connected) {
+
+    // get processing job information using jobId
+    const {csvFile, logFilePath} = processingJobs.get(jobId);
+
+    // check for errors in logfile
+    if (fs.existsSync(logFilePath)){
+        try {
+            const outputLogs = fs.readFileSync(logFilePath, { encoding: 'utf8'})
+            console.log("output: " + outputLogs);
+            // if output is not as expected, an error is assumed
+            if (!outputLogs.includes('Input #0')){
+                return {
+                    "status": "error",
+                    "error": "Error processing video: Unexpected ffmpeg error"
+                }
+            }
+        } catch (err){
+            console.log(err);
+        }
+        
+    }
+
+    // path to expected csv file and path to it's new destination folder
+    const csvFilePath = path.join(import.meta.dirname + '/../' + csvFile);
+    const csvFolder = path.join(import.meta.dirname + '/..' + process.env.RESULTS_PATH)
+
+    // if csv file is not yet generated, then the job is still processing
+    if (!fs.existsSync(csvFilePath)){
         return {
             "status": "processing"
         }
-    } else if (job.exitCode !== 0){
-        console.log(job.exitCode)
-        return {
-            "status": "error",
-            "error": "Error processing video: Unexpected ffmpeg error"
-        }
     }
 
-    // if process closes, move created csv file into public/results
-    const csvFilePath = path.join(import.meta.dirname + '/../' + csv);
-    const csvFolder = path.join(import.meta.dirname + '/..' + process.env.RESULTS_PATH)
-
+    // if the csv file does exist, then the child process is done
     try {
         if (!fs.existsSync(csvFolder)){
             fs.mkdirSync(csvFolder, {recursive: true});
         }
 
-        fs.renameSync(csvFilePath, csvFolder + '/' + csv);
+        fs.renameSync(csvFilePath, csvFolder + '/' + csvFile);
 
         return {
             "status": "done",
-            "result": "/results/" + csv
+            "result": "/results/" + csvFile
         }
     } catch (err){
         console.error("Error moving csv file:" + err);
@@ -101,7 +119,6 @@ const getJobStatus = (jobId) => {
             "error": "Error fetching job status"
         }
     }
-    // return current status and any resulting errors or results
 }
 
 
