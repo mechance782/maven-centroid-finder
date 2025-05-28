@@ -150,7 +150,7 @@ const getJobStatus = async (jobId) => {
 // getAllVideos
 const getAllVideos = () => {
     // use .env file path to find video folder
-    const videoFolderPath = path.join(import.meta.dirname, '..', process.env.VIDEO_PATH);
+    const videoFolderPath = path.join(process.cwd(), process.env.VIDEO_PATH);
     // take all file names in folder and add to an array
 
     try {

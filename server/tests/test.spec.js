@@ -1,6 +1,8 @@
-// test/add.spec.js
+import mock from 'mock-fs';
 import { expect } from 'chai';
-import { add }   from '../model/processorDataLayer.js';
+import dataLayer from '../model/processorDataLayer.js';
+import { allVideos, thumbnail, jobStatus, processingJob } from '../controllers/processorController.js';
+const { getAllVideos, getJobStatus, startNewProcessingJob, add } = dataLayer;
 
 describe('add()', () => {
   it('adds two numbers', () => {
@@ -52,6 +54,10 @@ describe('Controller Testing', ()=>{
 
 /** --------------------- MODEL TESTING --------------------- */
 describe('Model Testing', ()=> {
+  // restore mock file system after each test
+  afterEach(() => {
+    mock.restore();
+  })
     /** -------- START NEW PROCESSING JOB -------- */
   describe('startNewProcessingJob', ()=>{
     it('Return job id if child process exists', ()=>{
@@ -84,11 +90,42 @@ describe('Model Testing', ()=> {
   });
   /** -------- GET ALL VIDEOS -------- */
   describe('getAllVideos', ()=>{
+    // set up
+    beforeEach(() => {
+      process.env.VIDEO_PATH = 'videos';
+    })
+    // clean up
+    afterEach(() => {
+      delete process.env.VIDEO_PATH;
+    })
+
     it('Should return a list of all videos', ()=>{
+      mock({
+        'videos': {
+          'video1.mp4': Buffer.from('fake mp4 content 1'),
+          'video2.mp4': Buffer.from('fake mp4 content 2'),
+          'video3.mp4': Buffer.from('fake mp4 content 3'),
+        }
+      })
+      const result = getAllVideos();
+      expect(result).to.be.an('array').with.lengthOf(3);
+      expect(result).to.include.members(['video1.mp4', 'video2.mp4', 'video3.mp4']);
 
     });
-    it('Should return null if no videos found', ()=>{
 
+    it('Should return empty array if no videos found', ()=>{
+
+      mock({
+        'videos': {
+        }
+      })
+      const result = getAllVideos();
+      expect(result).to.be.an('array').with.lengthOf(0);
+    });
+
+    it('Should return null if error occurs', ()=>{
+      const result = getAllVideos();
+      expect(result).to.be.null;
     });
   });
   /** --------  GENERATE NEW THUMBNAIL -------- */
