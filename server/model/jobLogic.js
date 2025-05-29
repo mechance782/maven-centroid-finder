@@ -1,6 +1,6 @@
 // expected args: filename, targetcolor, threshold
 // outputCsv is generated in server folder
-const baseStartNewProcessingJob = (filename, targetColor, threshold, {
+export const baseStartNewProcessingJob = (filename, targetColor, threshold, {
     fs,
     path,
     uuidv4,

@@ -3,11 +3,8 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 import dataLayer from '../model/processorDataLayer.js';
 import { allVideos, thumbnail, jobStatus, processingJob } from '../controllers/processorController.js';
-import { baseGetJobStatus, handleCsvFile } from '../model/jobLogic.js';
+import { baseGetJobStatus, handleCsvFile, baseStartNewProcessingJob } from '../model/jobLogic.js';
 import { mkdir } from 'node:fs';
-import path from 'path';
-import * as fs from 'fs';
-import * as ffmpegNs from 'fluent-ffmpeg';
 const { getAllVideos, getJobStatus, startNewProcessingJob, add } = dataLayer;
 
 describe('add()', () => {
@@ -63,17 +60,78 @@ describe('Model Testing', ()=> {
   // restore mock file system after each test
   afterEach(() => {
     mock.restore();
+    sinon.restore();
   })
     /** -------- START NEW PROCESSING JOB -------- */
   describe('startNewProcessingJob', ()=>{
-    it('Return job id if child process exists', ()=>{
+    // set up sinon expressions
+    const fakeFs = {
+      openSync: sinon.stub().returns(42)
+    }
 
+    const fakePath = {
+      join: (...args) => args.join('/')
+    }
+
+    const fakeUuid = sinon.stub().returns('fake-uuid')
+
+    const processingJobs = new Map()
+
+    const fakeSpawn = sinon.stub().returns({
+      pid: 1234,
+      unref: sinon.stub()
+    })
+
+    afterEach(() => {
+      processingJobs.clear();
+    })
+
+    it('Return job id if child process starts successfully', ()=>{
+      const jobId = baseStartNewProcessingJob(
+        'video.mp4',
+        'ff00aa',
+        '10',
+        {
+          fs: fakeFs,
+          path: fakePath,
+          uuidv4: fakeUuid,
+          spawn: fakeSpawn,
+          processingJobs
+        });
+
+        expect(jobId).to.equal('fake-uuid')
+        expect(processingJobs.has('fake-uuid')).to.be.true;
     });
-    it('Should return null if child process doesnt exist', ()=>{
 
+    it('Should return null if child process doesnt exist', ()=>{
+      const jobId = baseStartNewProcessingJob(
+        'video.mp4',
+        'ff00aa',
+        '10',
+        {
+          fs: fakeFs,
+          path: fakePath,
+          uuidv4: fakeUuid,
+          spawn: sinon.stub().returns({unref: sinon.stub()}),
+          processingJobs
+        });
+
+        expect(jobId).to.be.null;
     });
     it('Should return null if error occurs', ()=>{
+      const jobId = baseStartNewProcessingJob(
+        'video.mp4',
+        'ff00aa',
+        '10',
+        {
+          fs: fakeFs,
+          path: fakePath,
+          uuidv4: fakeUuid,
+          spawn: sinon.stub().throws(new Error('test error')),
+          processingJobs
+        });
 
+        expect(jobId).to.be.null;
     });
   });
   /** -------- GET JOB STATUS -------- */
@@ -92,9 +150,7 @@ describe('Model Testing', ()=> {
     const fakePath = {
       join: (...args) => args.join('/')
     }
-
     afterEach(() => {
-      sinon.restore();
       processingJobs.clear();
     })
 
