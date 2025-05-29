@@ -1,4 +1,5 @@
 import dataLayer from '../model/processorDataLayer.js';
+import path from 'path';
 
 // get all videos
 export const allVideos = async(req, res) => {
@@ -29,8 +30,10 @@ export const thumbnail = async(req, res) => {
         console.log(`Getting thumbnail of ${videoPath} and ${filename}`);
         const thumbnailPath = await dataLayer.generateThumbnail(videoPath, filename);
 
+        const absPath = path.resolve(thumbnailPath);
+
         res.setHeader('Cache-Control', 'public, max-age=86400');
-        res.status(200).sendFile(thumbnailPath, err => err && nextTick(err));
+        res.status(200).sendFile(absPath, err => err && nextTick(err));
     } catch (e){
         throw e;
     }

@@ -303,36 +303,7 @@ describe('Model Testing', ()=> {
 
   /** --------  GENERATE NEW THUMBNAIL -------- */
   describe('generateThumbnail', () => {
-  const THUMB_DIR = path.resolve('test/tmp/thumbs');
-  const filename  = 'demo';
-  const videoPath = '/videos/demo.mp4';
-  const output    = path.join(THUMB_DIR, `${filename}-thumbnail.png`);
-
-  /** stub fluent-ffmpeg BEFORE importing the service */
-  before(async () => {
-    process.env.THUMBNAIL_PATH = THUMB_DIR;
-
-    sinon.stub(fs, 'mkdir').resolves();
-
-    const fakeProcessor = {
-      screenshots: sinon.stub().returnsThis(),
-      on(event, cb) {            // store callbacks so tests can trigger them
-        this[`_${event}`] = cb;
-        return this;
-    }
-};
-
-    // Detect whether fluent-ffmpeg is `default` or the fn itself
-    const ffmpegExport = ffmpegNs.default;
-    sinon.replace(ffmpegExport, sinon.stub().callsFake(() => fakeProcessor));
-
-    ({ generateThumbnail } = await import('../model/processorDataLayer.js'));
-  });
-
-  after(() => {
-    sinon.restore();
-    delete process.env.THUMBNAIL_PATH;
-  });
+  
 
   it('resolves path on success', async () => {
     

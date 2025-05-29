@@ -3,11 +3,12 @@ import { promises as FS } from 'fs';
 import fs from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegInstall from '@ffmpeg-installer/ffmpeg';
-import { timeStamp } from 'console';
 import { spawn } from 'node:child_process';
 import { v4 as uuidv4 } from 'uuid';
 import base from './jobLogic.js'
+import Base from './thumbnailLogic.js'
 const {baseGetJobStatus, baseStartNewProcessingJob, waitForLogContent, handleCsvFile} = base;
+const {baseThumbnailGenerator} = Base;
 
 
 ffmpeg.setFfmpegPath(ffmpegInstall.path);
@@ -70,25 +71,11 @@ const getAllVideos = () => {
 
 // getThumbnail (filename)
  const generateThumbnail = async (videopath, filename) => {
-    await FS.mkdir(THUMB_DIR, {recursive: true});
-    
-    const outputPath = path.join(THUMB_DIR, `${filename}-thumbnail.png`);
-    
-    return new Promise((resolve, reject) => {
-        ffmpeg(videopath)
-        .screenshots({
-        timestamps: [1],
-        filename: path.basename(outputPath),
-        folder: process.env.THUMBNAIL_PATH
-        })
-        .on('end', () => resolve(outputPath))
-        .on('error', e => {
-            console.error('FFmpeg error: ', e);
-            e.message=("Error generating thumbnail: ", e);
-            e.status =(500);
-            reject(e);
-        });
-    }); 
+    return await baseThumbnailGenerator(videopath, filename, {
+        FS,
+        path,
+        ffmpeg
+    })
  }
 
     // https://www.mux.com/articles/extract-thumbnails-from-a-video-with-ffmpeg
@@ -103,30 +90,6 @@ const getAllVideos = () => {
     // });
 // }
 
-const getThumbnail = async(videoPath, filename) => {
-
-    console.log(thumbnailFolderPath + "generating thumbnail");
-    try{
-        await fs.mkdir(process.env.THUMBNAIL_PATH, { recursive: true });
-
-        thumbnailList = await fs.readdir(process.env.THUMBNAIL_PATH);
-        console.log("Thumbnail list: ", thumbnailList);
-        const thumb = thumbnailList.find( f=> f.endsWith(ending) && f.slice(0, -ending.length) === filename);
-        console.log("Thumb: " + thumb);
-        if(thumb){
-            console.log(`Found existing thumbnail: ${thumb}`);
-            return path.join(process.env.THUMBNAIL_PATH, thumb); 
-        } 
-
-        console.log(`Generating thumbnail for ${filename}`);
-        return await generateThumbnail(videoPath, filename);
-    } catch (e){
-        console.log("Error getting thumbnail, in getThumbnail", e);
-        e.status =(500);
-        throw e;
-    }
-}
-
 const getVideoPath = (filename) => {
     // call get all videos to get a list of videos
     const videoList = getAllVideos();
@@ -140,4 +103,4 @@ const getVideoPath = (filename) => {
     }
 }
 
-export default {getAllVideos, getJobStatus, generateThumbnail, startNewProcessingJob, getVideoPath, add, getThumbnail}
+export default {getAllVideos, getJobStatus, generateThumbnail, startNewProcessingJob, getVideoPath, add}
