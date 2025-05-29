@@ -5,6 +5,9 @@ import dataLayer from '../model/processorDataLayer.js';
 import { allVideos, thumbnail, jobStatus, processingJob } from '../controllers/processorController.js';
 import { baseGetJobStatus, handleCsvFile } from '../model/jobLogic.js';
 import { mkdir } from 'node:fs';
+import path from 'path';
+import * as fs from 'fs';
+import * as ffmpegNs from 'fluent-ffmpeg';
 const { getAllVideos, getJobStatus, startNewProcessingJob, add } = dataLayer;
 
 describe('add()', () => {
@@ -241,53 +244,49 @@ describe('Model Testing', ()=> {
       expect(result).to.be.null;
     });
   });
+
   /** --------  GENERATE NEW THUMBNAIL -------- */
-  describe('generateThumbnail', ()=>{
-    const filename = 'demo';
-    const videoPath = '/videos/demo.mp4';
-    const expectedOut = path.join('thumbnails', `${filename}-thumbnail.png`);
-    let mkdirStub;
-    let screenshotsStub;
-    let onStub;
-    let ffmpegStub;
+  describe('generateThumbnail', () => {
+  const THUMB_DIR = path.resolve('test/tmp/thumbs');
+  const filename  = 'demo';
+  const videoPath = '/videos/demo.mp4';
+  const output    = path.join(THUMB_DIR, `${filename}-thumbnail.png`);
 
-    beforeEach(async ()=>{
-      process.env.THUMBNAIL_PATH = 'thumbnails';
-      mkdirStub = sinon.stub(fs, 'mkdir').resolves();
+  /** stub fluent-ffmpeg BEFORE importing the service */
+  before(async () => {
+    process.env.THUMBNAIL_PATH = THUMB_DIR;
 
-      screenshotsStub = sinon.stub().returnsThis();
+    sinon.stub(fs, 'mkdir').resolves();
 
-      // build a fake "processor" object that supports .screenshots() and .on()
-      onStub = sinon.stub().callsFake(function (event, cb) {
-      // Keep chainability: return the processor
-      // Actual callback triggers will be handled inside individual tests
-      if (event === 'end' || event === 'error') {
-        // store latest handler so the test can invoke it later
-        this[`_${event}Handler`] = cb;
-      }
-      return this;
-    });
+    const fakeProcessor = {
+      screenshots: sinon.stub().returnsThis(),
+      on(event, cb) {            // store callbacks so tests can trigger them
+        this[`_${event}`] = cb;
+        return this;
+    }
+};
 
-      const fakeProcessor = {screenshots: screenshotsStub, on: onStub};
+    // Detect whether fluent-ffmpeg is `default` or the fn itself
+    const ffmpegExport = ffmpegNs.default;
+    sinon.replace(ffmpegExport, sinon.stub().callsFake(() => fakeProcessor));
 
-      ffmpegStub = sinon.stub(ffmpegModule, 'default').callsFake(() => fakeProcessor);
+    ({ generateThumbnail } = await import('../model/processorDataLayer.js'));
+  });
+
+  after(() => {
+    sinon.restore();
+    delete process.env.THUMBNAIL_PATH;
+  });
+
+  it('resolves path on success', async () => {
     
-      ({ generateThumbnail } = await import('../model/processorDataLayer.js'));
-    });
-
-    afterEach(() => {
-      sinon.restore();
-      delete process.env.THUMBNAIL_PATH;
-    });
-
-    it('Should generate new thumbnail in thumbnail folder if successful', async()=>{
-
-    });
-    it('Should throw error if an error occurs', async()=>{
-
-    });
   });
+
+  it('rejects with status 500 on error', async () => {
+
   });
+})
+});
   /** --------  GET VIDEO PATH -------- */
   describe('getVideoPath', ()=>{
     it('Should return video path', ()=>{
@@ -296,4 +295,4 @@ describe('Model Testing', ()=> {
     it('Should return null if no video path found', ()=>{
 
     });
-});
+})
