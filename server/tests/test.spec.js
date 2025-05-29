@@ -1,9 +1,11 @@
 import mock from 'mock-fs';
+import path from 'path';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import dataLayer from '../model/processorDataLayer.js';
 import { allVideos, thumbnail, jobStatus, processingJob } from '../controllers/processorController.js';
 import { baseGetJobStatus, handleCsvFile, baseStartNewProcessingJob } from '../model/jobLogic.js';
+import { baseThumbnailGenerator } from '../model/thumbnailLogic.js';
 import { mkdir } from 'node:fs';
 const { getAllVideos, getJobStatus, startNewProcessingJob, add } = dataLayer;
 
@@ -303,10 +305,49 @@ describe('Model Testing', ()=> {
 
   /** --------  GENERATE NEW THUMBNAIL -------- */
   describe('generateThumbnail', () => {
-  
+    const makeFakeFfmpeg = ({ succeed = true } = {}) => {
+    const cmd = {
+      screenshots: sinon.stub().returnsThis(),
+      on(event, cb) {
+        if (event === (succeed ? 'end' : 'error')) {
+          setImmediate(() => {
+            succeed ? cb() : cb(new Error('FFmpeg boom'));
+          });
+        }
+        return this;
+      },
+    };
+    return sinon.stub().returns(cmd);
+  };
+    afterEach(() => {
+      sinon.restore();
+    });
 
   it('resolves path on success', async () => {
-    
+    const ffmpegStub = makeFakeFfmpeg({ succeed: true });
+    const videoPath = path.resolve('../public/videos/test.mp4');
+    const fileName = 'test';
+    process.env.THUMBNAIL_PATH = path.resolve('/public/thumbnails');
+    const expectedOutput = path.join(process.env.THUMBNAIL_PATH, videoPath);
+
+
+
+    const result = await baseThumbnailGenerator(videoPath, fileName, {
+      path,
+      ffmpeg: ffmpegStub
+    });
+
+    // Assertions
+    expect(result).to.equal(expectedOutput);
+
+    expect(ffmpegStub).to.have.been.calledOnceWithExactly(videoPath);
+    expect(
+      ffmpegStub.firstCall.returnValue.screenshots,
+    ).to.have.been.calledOnceWithMatch({
+      timestamps: [1],
+      filename: `${fileName}-thumbnail.png`,
+      folder: THUMB_DIR,
+    });
   });
 
   it('rejects with status 500 on error', async () => {
