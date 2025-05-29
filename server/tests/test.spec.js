@@ -20,6 +20,7 @@ describe('Controller Testing', ()=>{
   })
   /** -------- ALL VIDEOS -------- */
   describe('allVideos', ()=>{
+    
     const req = {}
     const res = {
       status: sinon.stub().returnsThis(),
@@ -34,8 +35,14 @@ describe('Controller Testing', ()=>{
       expect(res.status.calledWith(200)).to.be.true;
       expect(res.json.calledWith(['video1.mp4', 'video2.mp4', 'video3.mp4'])).to.be.true;
     });
-    it('Should send 500 status if error occurs', async()=>{
 
+    it('Should send 500 status if error occurs', async()=>{
+      sinon.stub(dataLayer, "getAllVideos").returns(null);
+
+      await allVideos(req, res);
+
+      expect(res.status.calledWith(500)).to.be.true;
+      expect(res.json.calledWith({"error": "Error reading video directory"})).to.be.true;
     });
   });
   /** -------- GET THUMBNAIL -------- */
@@ -49,10 +56,88 @@ describe('Controller Testing', ()=>{
   });
   /** -------- GET JOB STATUS -------- */
   describe('jobStatus', ()=>{
-    it('Should send 200 and JSON with job info', async()=>{
+    let req, res;
+    beforeEach(() => {
+      req = {
+        params: {
+          jobId: 'id-123'
+        }
+      }
+      res = {
+        status: sinon.stub().returnsThis(),
+        json: sinon.stub()
+      }
+    })
+    
+    it('Should send 200 and JSON with result path', async()=>{
+      sinon.stub(dataLayer, "getJobStatus").resolves({
+        status: 'done',
+        result: 'results/video.csv'
+      });
 
+      await jobStatus(req, res);
+
+      expect(res.status.calledWith(200)).to.be.true;
+      expect(res.json.calledWith({
+        status: 'done',
+        result: 'results/video.csv'
+      })).to.be.true;
     });
-    //TODO: Figure out what else this method should do
+
+    it('Should send 200 and JSON with processing status', async()=>{
+      sinon.stub(dataLayer, "getJobStatus").resolves({
+        status: 'processing'
+      });
+
+      await jobStatus(req, res);
+
+      expect(res.status.calledWith(200)).to.be.true;
+      expect(res.json.calledWith({
+        status: 'processing'
+      })).to.be.true;
+    });
+
+    it('Should send 200 and JSON with error information', async()=>{
+      sinon.stub(dataLayer, "getJobStatus").resolves({
+        status: 'error',
+        error: "Error processing video: Unexpected ffmpeg error"
+      });
+
+      await jobStatus(req, res);
+
+      expect(res.status.calledWith(200)).to.be.true;
+      expect(res.json.calledWith({
+        status: 'error',
+        error: "Error processing video: Unexpected ffmpeg error"
+      })).to.be.true;
+    });
+
+    it('Should send 404 and JSON with error information', async()=>{
+      sinon.stub(dataLayer, "getJobStatus").resolves({
+        error: "Job ID not found"
+      });
+
+      await jobStatus(req, res);
+
+      expect(res.status.calledWith(404)).to.be.true;
+      expect(res.json.calledWith({
+        error: "Job ID not found"
+      })).to.be.true;
+    });
+
+    it('Should send 500 and JSON with error information', async()=>{
+      sinon.stub(dataLayer, "getJobStatus").resolves({
+        error: "Error fetching job status"
+      });
+
+      await jobStatus(req, res);
+
+      expect(res.status.calledWith(500)).to.be.true;
+      expect(res.json.calledWith({
+        error: "Error fetching job status"
+      })).to.be.true;
+    });
+    
   });
   /** --------  POST PROCESSING JOB -------- */
   describe('processingJob', ()=>{
