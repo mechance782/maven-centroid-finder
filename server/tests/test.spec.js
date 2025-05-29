@@ -15,10 +15,24 @@ describe('add()', () => {
 
 /** --------------------- CONTROLLER TESTING --------------------- */
 describe('Controller Testing', ()=>{
+  afterEach(() => {
+    sinon.restore();
+  })
   /** -------- ALL VIDEOS -------- */
   describe('allVideos', ()=>{
-    it('Should return list of videos & 200 status code', async()=>{
+    const req = {}
+    const res = {
+      status: sinon.stub().returnsThis(),
+      json: sinon.stub()
+    }
 
+    it('Should return list of videos & 200 status code', async()=>{
+      sinon.stub(dataLayer, "getAllVideos").returns(['video1.mp4', 'video2.mp4', 'video3.mp4']);
+
+      await allVideos(req, res);
+
+      expect(res.status.calledWith(200)).to.be.true;
+      expect(res.json.calledWith(['video1.mp4', 'video2.mp4', 'video3.mp4'])).to.be.true;
     });
     it('Should send 500 status if error occurs', async()=>{
 
