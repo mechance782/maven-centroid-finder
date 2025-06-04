@@ -14,6 +14,11 @@ How will you test your Dockerfile and image?
 - Start the container and run our app, then make sure we can connect to that image
 - I have also seen some things about using ContainerStructureTest created by Google to test the structure of a container image?
 How will you make sure the endpoints are available outside the image?
-- 
+- Using EXPOSE <port> we will make the necessary ports available outside the image
+- When going to run, make sure that we include:
+docker run -p 3000:3000 appname:latest (USED AI HERE)
+- check at localhost:3000 to make sure we can connect to it
 How will your code know where to access the video/results directory? Hint: environment variables and volumes. (We'll talk about volumes on Thursday)
+- ??? not too sure on this one
 How can you make you docker image small, cacheable, and quick to make changes to?
+- ??? also not entirely sure
