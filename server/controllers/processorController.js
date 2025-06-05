@@ -47,9 +47,7 @@ export const jobStatus = async(req, res) => {
         // if finished, send an HTTP 200 OK response containing a JSON payload with jobId, status and csv file path
     if (result.status){
         res.status(200).json(result);
-    }
-        // 202: accepted response with jobId and status
-    if (result.error == "Job ID not found"){
+    } else if (result.error == "Job ID not found"){
         res.status(404).json(result);
     } else {
         res.status(500).json(result);

@@ -107,6 +107,14 @@ export const baseGetJobStatus = async (jobId, {
 // returns object with status and csv file path or with error message
 export const handleCsvFile = (csvFolder, csvFilePath, csvFile, fs) => {
     try {
+        
+        const stats = fs.statSync(csvFilePath);
+
+        if (stats.size <= 0){
+            return {
+                "status": "processing"
+            }
+        } 
         // if the csv results directory does not exist yet, then make it
         if (!fs.existsSync(csvFolder)){
             fs.mkdirSync(csvFolder, {recursive: true});
@@ -114,11 +122,12 @@ export const handleCsvFile = (csvFolder, csvFilePath, csvFile, fs) => {
 
         // get csv file and move it to results directory
         fs.renameSync(csvFilePath, csvFolder + '/' + csvFile);
-
+        
         return {
             "status": "done",
             "result": "/results/" + csvFile
         }
+        
     } catch (err){
         console.error("Error moving csv file:", err);
         return {
