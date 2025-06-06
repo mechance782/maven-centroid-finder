@@ -14,8 +14,9 @@ const PORT = 3000;
 
 // Set the view to public folder
 app.use(express.static('public'));
-if (process.env.RESULTS_PATH){
-   app.use('/results', express.static(path.resolve(process.env.RESULTS_PATH))) 
+if (process.env.RESULTS_PATH && process.env.VIDEO_PATH){
+   app.use('/results', express.static(path.resolve(process.env.RESULTS_PATH)));
+   app.use('/videos', express.static(path.resolve(process.env.VIDEO_PATH)));
 }
 
 

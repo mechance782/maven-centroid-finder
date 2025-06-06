@@ -1,7 +1,7 @@
-node_modules/
-scratch.js
+server/node_modules
+server/scratch.js
 
 
-videos/
-thumbnails/
-results/
+server/public/videos/
+server/public/thumbnails/
+server/public/results/
