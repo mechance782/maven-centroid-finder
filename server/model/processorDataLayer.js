@@ -13,7 +13,7 @@ const {baseThumbnailGenerator} = Base;
 
 ffmpeg.setFfmpegPath(ffmpegInstall.path);
 
-const THUMB_DIR = path.resolve(process.env.THUMBNAIL_PATH || 'public/thumbnails');
+const THUMB_DIR = path.resolve(process.env.THUMBNAIL_PATH || './public/thumbnails');
 // Create or import Map to track child processes here
 const processingJobs = new Map();
 
@@ -49,7 +49,7 @@ const getJobStatus = async (jobId) => {
 // getAllVideos
 const getAllVideos = () => {
     // use .env file path to find video folder
-    const videoFolderPath = path.join(process.cwd(), process.env.VIDEO_PATH);
+    const videoFolderPath = path.resolve(process.env.VIDEO_PATH || './public/videos');
     // take all file names in folder and add to an array
 
     try {
@@ -72,7 +72,7 @@ const getAllVideos = () => {
 // getThumbnail (filename)
  const generateThumbnail = async (videopath, filename) => {
     return await baseThumbnailGenerator(videopath, filename, {
-        FS,
+        fs,
         path,
         ffmpeg
     })
@@ -96,7 +96,9 @@ const getVideoPath = (filename) => {
     // check if filename is included in the array (and that a videolist exists)
     if(videoList && videoList.includes(filename)){
         // return a string concatenation of the filepath if found
-        return path.join('.',process.env.VIDEO_PATH + filename);
+        const videoDir = path.resolve(process.env.VIDEO_PATH || './public/videos');
+
+        return path.join(videoDir, filename);
     } else{
         console.log(`${filename} does not exist in videos folder.`);
         return null;

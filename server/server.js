@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import router from './routes/processorRouter.js'
 import dotenv from 'dotenv';
+import path from 'path';
 
 dotenv.config({
     path: import.meta.dirname + '/../.env'
@@ -13,6 +14,10 @@ const PORT = 3000;
 
 // Set the view to public folder
 app.use(express.static('public'));
+if (process.env.RESULTS_PATH){
+   app.use('/results', express.static(path.resolve(process.env.RESULTS_PATH))) 
+}
+
 
 // Allows this server to accept requests from different domains (origins)
 app.use(cors());

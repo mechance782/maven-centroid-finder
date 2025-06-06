@@ -1,8 +1,8 @@
-# Use Debian-based Eclipse Temurin JDK 17
-FROM eclipse-temurin:17-jdk
+# Use Debian-based Eclipse Temurin JDK 21
+FROM eclipse-temurin:21-jdk
 
 # Install curl, Node.js (v18), and npm
-RUN apt-get update && apt-get install -y curl gnupg && \
+RUN apt-get update && apt-get install -y --no-install-recommends curl gnupg && \
     curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -31,7 +31,7 @@ WORKDIR /app
 ENV VIDEO_PATH=/videos
 ENV RESULTS_PATH=/results
 ENV THUMBNAIL_PATH=/thumbnails
-ENV JAR_PATH=/app/centroid
+ENV JAR_PATH=/app/centroid.jar
 
 # copy all of server into directory
 COPY server ./server

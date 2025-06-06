@@ -27,7 +27,6 @@ export const thumbnail = async(req, res) => {
         const videoPath =  await dataLayer.getVideoPath(filename);
         if(!videoPath) return res.status(404).json({error: 'Video not found.'});
 
-        console.log(`Getting thumbnail of ${videoPath} and ${filename}`);
         const thumbnailPath = await dataLayer.generateThumbnail(videoPath, filename);
 
         const absPath = path.resolve(thumbnailPath);

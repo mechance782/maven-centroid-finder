@@ -8,8 +8,9 @@ export const baseStartNewProcessingJob = (filename, targetColor, threshold, {
     processingJobs
 }) => {
     // create paths and filenames
-    const jarPath = path.join(process.cwd(), '..', process.env.JAR_PATH);
-    const videoPath = path.join(process.cwd(), process.env.VIDEO_PATH, filename);
+    const jarPath = path.resolve(process.env.JAR_PATH || '../processor/target/centroid-finder-jar-with-dependencies.jar');
+    const videoDir = path.resolve(process.env.VIDEO_PATH || './public/videos');
+    const videoPath = path.join(videoDir, filename);
     const outputcsv = filename + ".csv";
     // create log file
     const logFilePath = path.join('/tmp', `${filename}-${Date.now()}.log`);
@@ -64,32 +65,29 @@ export const baseGetJobStatus = async (jobId, {
             const outputLogs = await waitForLogContent(FS, logFilePath);
             // check for errors and exceptions in log
             if (outputLogs.toLowerCase().includes('error') || outputLogs.toLowerCase().includes('exception')){
-                // clean up log file which is now unnecessary 
-                try {
-                    await FS.unlink(logFilePath);
-                } catch (err){
-                    console.log("Error: failed to delete log file ", err)
-                }
+                
+                console.error(outputLogs);
                 return {
                     "status": "error",
                     "error": "Error processing video: Unexpected ffmpeg error"
                 }
             }
+
+            // clean up log file which is now unnecessary 
+            try {
+                await FS.unlink(logFilePath);
+            } catch (err) {
+                console.log("Error: failed to delete log file ", err)
+            }
+            
         } catch (err){
             console.log(err);
         }   
     }
 
-    // clean up log files
-    try {
-        await FS.unlink(logFilePath);
-    } catch (err) {
-        console.log("Error: failed to delete log file ", err)
-    }
-
     // path to expected csv file and path to it's new destination folder
-    const csvFilePath = path.join(process.cwd(), csvFile);
-    const csvFolder = path.join(process.cwd(), process.env.RESULTS_PATH)
+    const csvFilePath = path.resolve(csvFile);
+    const csvFolder = path.resolve(process.env.RESULTS_PATH || './public/results');
 
     // if csv file is generated, move it, then return status + results
     if (fs.existsSync(csvFilePath)){

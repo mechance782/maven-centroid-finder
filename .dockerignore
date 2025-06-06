@@ -1,5 +1,7 @@
-#node.js
-node_modules
+node_modules/
+scratch.js
 
-#dev
-scratch.*
+
+videos/
+thumbnails/
+results/
