@@ -8,10 +8,10 @@ RUN apk add --no-cache curl nodejs npm
 WORKDIR /app
 
 # copy jar into app directory
-COPY processor/target/centroid-finder-jar-with-dependencies.jar .
+COPY processor/target/centroid-finder-jar-with-dependencies.jar ./centroid.jar
 
 # copy all of server into directory
-COPY server .
+COPY server ./server
 
 # set directory to server (so docker knows where to find the package.json)
 WORKDIR /app/server
