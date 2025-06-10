@@ -88,6 +88,14 @@ export const baseGetJobStatus = async (jobId, {
     // path to expected csv file and path to it's new destination folder
     const csvFilePath = path.resolve(csvFile);
     const csvFolder = path.resolve(process.env.RESULTS_PATH || './public/results');
+    const csvDestination = path.resolve(csvFolder + '/' + csvFile);
+
+    if (fs.existsSync(csvDestination)){
+        return {
+            "status": "done",
+            "result": "/results/" + csvFile
+        }
+    }
 
     // if csv file is generated, move it, then return status + results
     if (fs.existsSync(csvFilePath)){
@@ -108,11 +116,13 @@ export const handleCsvFile = (csvFolder, csvFilePath, csvFile, fs) => {
         
         const stats = fs.statSync(csvFilePath);
 
-        if (stats.size <= 0){
+        if (stats.size <= 0) {
             return {
                 "status": "processing"
             }
-        } 
+        }
+        
+        
         // if the csv results directory does not exist yet, then make it
         if (!fs.existsSync(csvFolder)){
             fs.mkdirSync(csvFolder, {recursive: true});
