@@ -12,6 +12,9 @@ dotenv.config({
 const app = express();
 const PORT = 3000;
 
+// Allows this server to accept requests from different domains (origins)
+app.use(cors());
+
 // Set the view to public folder
 app.use(express.static('public'));
 if (process.env.RESULTS_PATH && process.env.VIDEO_PATH){
@@ -20,8 +23,7 @@ if (process.env.RESULTS_PATH && process.env.VIDEO_PATH){
 }
 
 
-// Allows this server to accept requests from different domains (origins)
-app.use(cors());
+
 
 // This allows us to read in JSON payloads from the req body
 app.use(express.json());
