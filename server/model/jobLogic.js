@@ -90,16 +90,15 @@ export const baseGetJobStatus = async (jobId, {
     const csvFolder = path.resolve(process.env.RESULTS_PATH || './public/results');
     const csvDestination = path.resolve(csvFolder + '/' + csvFile);
 
-    if (fs.existsSync(csvDestination)){
-        return {
-            "status": "done",
-            "result": "/results/" + csvFile
-        }
-    }
 
     // if csv file is generated, move it, then return status + results
     if (fs.existsSync(csvFilePath)){
         return handleCsvFile(csvFolder, csvFilePath, csvFile, fs);
+    } else if (fs.existsSync(csvDestination)) {
+        return {
+            "status": "done",
+            "result": "/results/" + csvFile
+        }
     }
 
     // if no errors and no csv file, then status is processing
