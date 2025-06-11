@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl gnupg && \
 WORKDIR /app
 
 # copy jar into app directory
-COPY processor/target/centroid-finder-jar-with-dependencies.jar ./centroid.jar
+COPY processor/target/centroid-finder.jar ./centroid.jar
 
 # copy package json so we can install node packages before anything else
 # good for caching since npm install won't have to run on every build now

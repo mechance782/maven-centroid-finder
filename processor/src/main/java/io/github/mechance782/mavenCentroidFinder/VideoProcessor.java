@@ -2,7 +2,6 @@ package io.github.mechance782.mavenCentroidFinder;
 import java.io.PrintWriter;
 
 import org.bytedeco.javacv.FFmpegFrameGrabber;
-import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.Frame;
 
 /**
@@ -36,6 +35,8 @@ public class VideoProcessor implements VideoAnalyzer {
      */
     @Override
     public void centroidToCsv(String fileName) {
+
+        writer.println("Seconds,X,Y");
 
         try (FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(fileName)) {
             grabber.start();
