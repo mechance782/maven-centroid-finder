@@ -17,6 +17,18 @@ export const allVideos = async(req, res) => {
 
 }
 
+export const allJobs = (req, res) => {
+    const jobs = dataLayer.getAllJobs();
+
+    if (jobs){
+        res.status(200).json(jobs);
+    } else {
+        res.status(500).json({
+            "error": "Error reading Current Jobs"
+        })
+    }
+}
+
 // get thumbnail
 // referenced this article on how to use ffmpeg
 // https://mohammedshamseerpv.medium.com/generate-thumbnails-from-videos-in-node-js-using-fluent-ffmpeg-62583d1c2e61

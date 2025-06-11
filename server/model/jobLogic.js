@@ -8,10 +8,10 @@ export const baseStartNewProcessingJob = (filename, targetColor, threshold, {
     processingJobs
 }) => {
     // create paths and filenames
-    const jarPath = path.resolve(process.env.JAR_PATH || '../processor/target/centroid-finder-jar-with-dependencies.jar');
+    const jarPath = path.resolve(process.env.JAR_PATH || '../processor/target/centroid-finder.jar');
     const videoDir = path.resolve(process.env.VIDEO_PATH || './public/videos');
     const videoPath = path.join(videoDir, filename);
-    const outputcsv = filename + ".csv";
+    const outputcsv = filename + targetColor + threshold + ".csv";
     // create log file
     const logFilePath = path.join('/tmp', `${filename}-${Date.now()}.log`);
     const logFile = fs.openSync(logFilePath, 'a');
@@ -148,7 +148,7 @@ export const handleCsvFile = (csvFolder, csvFilePath, csvFile, fs) => {
 const waitForLogContent = async (FS, filePath, maxRetries = 5, delay = 500) => {
 
     // try to read the log file every 500 ms
-    // after 5 tries, throw error
+    // after 5 tries, give up
     for (let i = 0; i < maxRetries; i++) {
         try {
             const content = await FS.readFile(filePath, 'utf8');
@@ -158,7 +158,6 @@ const waitForLogContent = async (FS, filePath, maxRetries = 5, delay = 500) => {
         }
         await new Promise(res => setTimeout(res, delay));
     }
-    throw new Error("Log file is still empty after retries");
 };
 
 export default {baseGetJobStatus, baseStartNewProcessingJob, waitForLogContent, handleCsvFile}

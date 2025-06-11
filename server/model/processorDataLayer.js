@@ -19,8 +19,6 @@ const processingJobs = new Map();
 
 // CREATE
 
-export const add = (a, b) => a + b;
-
 // expected args: filename, targetcolor, threshold
 // outputCsv is generated in server folder
 const startNewProcessingJob = (filename, targetColor, threshold) => {
@@ -45,6 +43,11 @@ const getJobStatus = async (jobId) => {
     })
 }
 
+
+const getAllJobs = () => {
+    const allJobs = Object.fromEntries(processingJobs);
+    return allJobs;
+}
 
 // getAllVideos
 const getAllVideos = () => {
@@ -105,4 +108,4 @@ const getVideoPath = (filename) => {
     }
 }
 
-export default {getAllVideos, getJobStatus, generateThumbnail, startNewProcessingJob, getVideoPath, add}
+export default {getAllVideos, getJobStatus, generateThumbnail, startNewProcessingJob, getVideoPath, getAllJobs}
