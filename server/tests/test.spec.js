@@ -6,14 +6,7 @@ import dataLayer from '../model/processorDataLayer.js';
 import { allVideos, thumbnail, jobStatus, processingJob } from '../controllers/processorController.js';
 import { baseGetJobStatus, handleCsvFile, baseStartNewProcessingJob } from '../model/jobLogic.js';
 import { baseThumbnailGenerator } from '../model/thumbnailLogic.js';
-import { mkdir } from 'node:fs';
-const { getAllVideos, getJobStatus, startNewProcessingJob, add } = dataLayer;
-
-describe('add()', () => {
-  it('adds two numbers', () => {
-    expect(add(2, 3)).to.equal(5);
-  });
-});
+const { getAllVideos, getJobStatus, startNewProcessingJob } = dataLayer;
 
 /** --------------------- CONTROLLER TESTING --------------------- */
 describe('Controller Testing', ()=>{
@@ -171,7 +164,8 @@ describe('Model Testing', ()=> {
     }
 
     const fakePath = {
-      join: (...args) => args.join('/')
+      join: (...args) => args.join('/'),
+      resolve: (...args) => args.join('/')
     }
 
     const fakeUuid = sinon.stub().returns('fake-uuid')
@@ -249,7 +243,8 @@ describe('Model Testing', ()=> {
     }
 
     const fakePath = {
-      join: (...args) => args.join('/')
+      join: (...args) => args.join('/'),
+      resolve: (...args) => args.join('/')
     }
     afterEach(() => {
       processingJobs.clear();
@@ -325,7 +320,7 @@ describe('Model Testing', ()=> {
         processingJobs,
         fs: fakeFs,
         FS: fakeFsPromises,
-        path: {join: () => 'csvFilePath'},
+        path: {resolve: () => 'csvFilePath'},
         waitForLogContent: async () => '',
         handleCsvFile: () => { return {
             "status": "done",
@@ -351,7 +346,7 @@ describe('Model Testing', ()=> {
         processingJobs,
         fs: fakeFs,
         FS: fakeFsPromises,
-        path: {join: () => 'csvFilePath'},
+        path: {resolve: () => 'csvFilePath'},
         waitForLogContent: async () => '',
         handleCsvFile: () => { return {
             "error": "Error fetching job status"
