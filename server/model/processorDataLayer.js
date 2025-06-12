@@ -45,7 +45,7 @@ const getJobStatus = async (jobId) => {
 
 
 const getAllJobs = () => {
-    const allJobs = Object.fromEntries(processingJobs);
+    const allJobs = Array.from(processingJobs);
     return allJobs;
 }
 
